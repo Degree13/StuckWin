@@ -105,10 +105,19 @@ public class StuckWin {
 
     void affiche() {
 
-      // votre code ici
+      // Affichage dév et debug
       for(int it = 0; it < state.length; it++) {
+        int letter = 65;
         for (int e = 1; e < state.length+1; e++){
-            System.out.print(state[it][e]+" ");
+          if (state[it][e] == 'B') {
+            System.out.print(ConsoleColors.BLUE + (char)letter + (7-it) +" ");
+            letter += 1;
+          } else if (state[it][e] == 'R') {
+            System.out.print(ConsoleColors.RED + (char)letter + (7-it) +" ");
+            letter += 1;
+          } else {
+              System.out.print(" " + ConsoleColors.RESET + state[it][e]+" ");
+            }
         }
         System.out.println("");
     }
@@ -236,7 +245,6 @@ public class StuckWin {
         do {
 
               // séquence pour Bleu ou rouge
-
               jeu.affiche();
 
               do {
