@@ -4,6 +4,10 @@ import java.util.List;
 
 import java.util.Scanner;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+
+import com.oracle.webservices.internal.impl.internalspi.encoding.StreamDecoder;
+
 
 public class StuckWin {
 
@@ -105,15 +109,69 @@ public class StuckWin {
 
     void affiche() {
 
-      // votre code ici
+      // Affichage console
       for(int it = 0; it < state.length; it++) {
+        int letter = 65;
         for (int e = 1; e < state.length+1; e++){
-            System.out.print(state[it][e]+" ");
+          if (state[it][e] == 'B') {
+            System.out.print(ConsoleColors.BLUE + (char)letter + (7-it) +" ");
+            letter += 1;
+          } else if (state[it][e] == 'R') {
+            System.out.print(ConsoleColors.RED + (char)letter + (7-it) +" ");
+            letter += 1;
+          } else if (state[it][e] == '.') {
+              System.out.print(ConsoleColors.RESET  + (char)letter + (7-it)+" ");
+            } else {
+              System.out.print(" " + ConsoleColors.RESET + state[it][e] + " ");
+            }
         }
         System.out.println("");
     }
+    // Affichage StdDraw
+    StdDraw.setXscale(-10, 10);
+    StdDraw.setYscale(-10, 10);
 
+    for(int it = 0; it < state.length; it++) {
+      int letter = 65;
+      double hauteur = 5-it*0.9;
+      double largeur = 0;
+      if (it<4){
+        largeur = 0-it*1.5;
+      } else {
+         largeur = -4.5;
+         hauteur = 7.3-it*1.7;
+      }
+      for (int e = 1; e < state.length+1; e++){
+        if (state[it][e] != '-') {
+          hexagon(largeur, hauteur, 1);
+          if (state[it][e] == 'B') {
+            StdDraw.setPenColor(StdDraw.BLUE);
+          } else if (state[it][e] == 'R') {
+            StdDraw.setPenColor(StdDraw.RED);
+          } else {
+            StdDraw.setPenColor(StdDraw.WHITE);
+          }
+          StdDraw.filledCircle(largeur, hauteur, 0.7);
+          hauteur -= 0.9;
+          largeur += 1.5;
+          StdDraw.setPenColor(StdDraw.BLACK);
+          String nomCase = String.valueOf(7-it); //Int a convertir en String + la lettre
+          StdDraw.text(largeur, hauteur, nomCase);
+          letter += 1;
+        }
+      }
     }
+  }
+
+    void hexagon(double x, double y, double size) {
+      double theta = (2*Math.PI)/6;
+      for (int i=0; i<=6 ; i++){
+        StdDraw.line((Math.cos(i*theta))+x, (Math.sin(i*theta))+y, (Math.cos((i+1)*theta))+x, (Math.sin((i+1)*theta))+y);
+    }
+      
+
+    
+  }
 
 
     /**
@@ -236,7 +294,6 @@ public class StuckWin {
         do {
 
               // séquence pour Bleu ou rouge
-
               jeu.affiche();
 
               do {
