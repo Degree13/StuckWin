@@ -109,9 +109,12 @@ public class StuckWin {
 
     void affiche() {
 
-      // Affichage console
+      // Affichage console Dev
       for(int it = 0; it < state.length; it++) {
         int letter = 65;
+        if (it>3){
+          letter += (it-3);
+        }
         for (int e = 1; e < state.length+1; e++){
           if (state[it][e] == 'B') {
             System.out.print(ConsoleColors.BLUE + (char)letter + (7-it) +" ");
@@ -121,52 +124,56 @@ public class StuckWin {
             letter += 1;
           } else if (state[it][e] == '.') {
               System.out.print(ConsoleColors.RESET  + (char)letter + (7-it)+" ");
+              letter += 1;
             } else {
               System.out.print(" " + ConsoleColors.RESET + state[it][e] + " ");
             }
         }
         System.out.println("");
-    }
-
-    // Affichage StdDraw
-    StdDraw.setXscale(-10, 10);
-    StdDraw.setYscale(-10, 10);
-
-    for(int it = 0; it < state.length; it++) {
-      int letter = 65;
-      double hauteur = 5-it*0.85;
-      double largeur = 0;
-      if (it<4){
-        largeur = 0-it*1.5;
-      } else {
-         largeur = -4.5;
-         hauteur = 7.5-it*1.7;
       }
-      for (int e = 1; e < state.length+1; e++){
-        if (state[it][e] != '-') {
-          StdDraw.setPenColor(StdDraw.BLACK);
-          hexagon(largeur, hauteur, 1);
-          if (state[it][e] == 'B') {
-            StdDraw.setPenColor(StdDraw.BLUE);
-          } else if (state[it][e] == 'R') {
-            StdDraw.setPenColor(StdDraw.RED);
-          } else {
-            StdDraw.setPenColor(StdDraw.WHITE);
-          }
-          StdDraw.filledCircle(largeur, hauteur, 0.7);
-          hauteur -= 0.9;
-          largeur += 1.5;
-          StdDraw.setPenColor(StdDraw.WHITE);
-          if (state[it][e] == '.') {
+
+      // Affichage console Jeu
+
+      // Affichage StdDraw
+      StdDraw.setXscale(-10, 10);
+      StdDraw.setYscale(-10, 10);
+
+      for(int it = 0; it < state.length; it++) {
+        int letter = 65;
+        double hauteur = 5-it*0.85;
+        double largeur = 0;
+        if (it<4){
+          largeur = 0-it*1.5;
+        } else {
+          largeur = -4.5;
+          hauteur = 7.5-it*1.7;
+          letter += (it-3);
+        }
+        for (int e = 1; e < state.length+1; e++){
+          if (state[it][e] != '-') {
             StdDraw.setPenColor(StdDraw.BLACK);
+            hexagon(largeur, hauteur, 1);
+            if (state[it][e] == 'B') {
+              StdDraw.setPenColor(StdDraw.BLUE);
+            } else if (state[it][e] == 'R') {
+              StdDraw.setPenColor(StdDraw.RED);
+            } else {
+              StdDraw.setPenColor(StdDraw.WHITE);
+            }
+            StdDraw.filledCircle(largeur, hauteur, 0.7);
+            hauteur -= 0.9;
+            largeur += 1.5;
+            StdDraw.setPenColor(StdDraw.WHITE);
+            if (state[it][e] == '.') {
+              StdDraw.setPenColor(StdDraw.BLACK);
+            }
+            String nomCase = String.valueOf((char)letter) + String.valueOf(7-it); //char et int a convertir en String
+            StdDraw.text(largeur-1.5, hauteur+0.85, nomCase);
+            letter += 1;
           }
-          String nomCase = String.valueOf((char)letter) + String.valueOf(7-it); //char et int a convertir en String
-          StdDraw.text(largeur-1.5, hauteur+0.85, nomCase);
-          letter += 1;
         }
       }
     }
-  }
 
   /**
 
@@ -177,15 +184,15 @@ public class StuckWin {
      * @param size taille de l'héxagone
 
      */
-  void hexagon(double x, double y, double size) {
-    double theta = (2*Math.PI)/6;
-    for (int i=0; i<=6 ; i++){
-      StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
-  }
-      
+    void hexagon(double x, double y, double size) {
+      double theta = (2*Math.PI)/6;
+      for (int i=0; i<=6 ; i++){
+        StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
+    }
+        
 
-    
-  }
+      
+    }
 
 
     /**
