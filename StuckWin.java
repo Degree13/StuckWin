@@ -1,8 +1,10 @@
 import java.util.ArrayList;
-
+import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import java.util.Scanner;
+import java.util.random.RandomGenerator;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
@@ -64,11 +66,64 @@ public class StuckWin {
      */
 
     Result deplace(char couleur, String lcSource, String lcDest,  ModeMvt mode) {
+      //ATTENTION !!!!!!!!!!!!!!!!!! IL MANQUE ENCORE EXT_BOARD ET EXIT
+      // Traduction des Strings en Ints exploitables avec le tableau
+      int idLineSource = 55-lcSource.charAt(1);
+      int idLineDest = 55-lcDest.charAt(1);
+      
+      int idColSource = (lcSource.charAt(1)-48)+(lcSource.charAt(0)-68);
+      int idColDest = (lcDest.charAt(1)-48)+(lcDest.charAt(0)-68);
+      System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
 
-      // votre code ici. Supprimer la ligne ci-dessous.
-
-      throw new java.lang.UnsupportedOperationException("à compléter");
-
+      if (state[idLineSource][idColSource] == '.') {
+        return Result.EMPTY_SRC;
+      }
+      if (state[idLineDest][idColDest] != '.') {
+        return Result.DEST_NOT_FREE;
+      }
+      if (state[idLineSource][idColSource] != couleur) {
+        return Result.BAD_COLOR;
+      }
+      String isTooFar =  Arrays.toString(possibleDests(couleur, idLineSource, idColSource));
+      System.out.println(isTooFar);
+      boolean boolTooFar = true;
+      switch(couleur){
+        case 'B':
+          if (isTooFar.charAt(1) == 'L' && idColDest+1 == idColSource && idLineDest == idLineSource) {
+            System.out.println("Checkpoint1 B");
+            boolTooFar = false;
+          } else if (isTooFar.charAt(6) == 'T' && idLineDest+1 == idLineSource && idColDest == idColSource) {
+            System.out.println("Checkpoint2 B");
+            boolTooFar = false;
+          } else if (isTooFar.charAt(11) == 'R' && idLineDest-1 == idLineSource && idColDest+1 == idColSource) {
+            System.out.println("Checkpoint3 B");
+            boolTooFar = false;
+          }
+          if (boolTooFar == true) {
+            return Result.TOO_FAR;
+          }
+          break;
+        case 'R':
+          if (isTooFar.charAt(1) == 'L' && (idColDest+1 == idColSource && idLineDest-1 == idLineSource)) {
+            System.out.println("Checkpoint1 R");
+            boolTooFar = false;
+          } else if (isTooFar.charAt(6) == 'D' && idLineDest-1 == idLineSource && idColDest == idColSource) {
+            System.out.println("Checkpoint2 R");
+            boolTooFar = false;
+          } else if (isTooFar.charAt(11) == 'R' && idLineDest == idLineSource && idColDest-1 == idColSource) {
+            System.out.println("Checkpoint3 R");
+            boolTooFar = false;
+          }
+          if (boolTooFar == true) {
+            return Result.TOO_FAR;
+          }
+          break;
+        default:
+          throw new java.lang.UnsupportedOperationException("Fonction deplace : Couleur incompatible");
+      }
+      state[idLineSource][idColSource] = '.';
+      state[idLineDest][idColDest] = couleur;
+      return Result.OK;
     }
 
 
@@ -92,10 +147,55 @@ public class StuckWin {
 
     String[] possibleDests(char couleur, int idLettre, int idCol){
 
-      // votre code ici. Supprimer la ligne ci-dessous.
+      if (idLettre > 6 || idLettre < 0 || idCol > 7 || idCol < 1){
+        String throwMsg = "Erreur, les valeurs entrées en paramètres de la fonction possibleDests ne correspondent à aucune case";
+        throw new java.lang.UnsupportedOperationException(throwMsg);
+      }
 
-      throw new java.lang.UnsupportedOperationException("à compléter");
+      String[] possibilites = new String[3];
+      Arrays.fill(possibilites, "XXX");
 
+      switch(couleur){
+
+        case 'B': 
+          if (idCol > 1) {
+            if (state[idLettre][idCol-1] == '.') {
+              possibilites[0] = "LFT";       
+            }
+          }
+          if (idLettre > 0) {
+            if (state[idLettre-1][idCol] == '.') {
+              possibilites[1] = "TOP";       
+            }
+          }
+          if (idLettre > 0 && idCol < 7) {
+            if (state[idLettre-1][idCol+1] == '.') {
+              possibilites[2] = "RGT";       
+            }
+          }
+          break;
+        
+        case 'R':
+          if (idCol > 1 && idLettre < 6) {
+            if (state[idLettre+1][idCol-1] == '.') {
+              possibilites[0] = "LFT";       
+            }
+          }
+          if (idLettre < 6) {
+            if (state[idLettre+1][idCol] == '.') {
+              possibilites[1] = "DWN";       
+            }
+          }
+          if (idCol < 7) {
+            if (state[idLettre][idCol+1] == '.') {
+              possibilites[2] = "RGT";       
+            }
+          }
+          break;
+      }
+
+      //System.out.println(state[idLettre][idCol] + " " + possibilites[0] + possibilites[1] + possibilites[2]);
+      return possibilites;
     }
 
 
@@ -108,6 +208,9 @@ public class StuckWin {
      */
 
     void affiche() {
+      //TESTS A DEGAGER
+      //possibleDests('R', 0, 7);
+      //System.out.println(deplace('B', "E3", "D4", ModeMvt.REAL));
 
       // Affichage console Dev
       for(int it = 0; it < state.length; it++) {
@@ -153,6 +256,7 @@ public class StuckWin {
         if (state[it][e] != '-') {
           StdDraw.setPenColor(StdDraw.BLACK);
           hexagon(largeur, hauteur, 1);
+
           if (state[it][e] == 'B') {
             StdDraw.setPenColor(StdDraw.BLUE);
           } else if (state[it][e] == 'R') {
@@ -160,10 +264,12 @@ public class StuckWin {
           } else {
             StdDraw.setPenColor(StdDraw.WHITE);
           }
+
           StdDraw.filledCircle(largeur, hauteur, 0.7);
           hauteur -= 0.9;
           largeur += 1.5;
           StdDraw.setPenColor(StdDraw.WHITE);
+
           if (state[it][e] == '.') {
             StdDraw.setPenColor(StdDraw.BLACK);
           }
@@ -206,8 +312,16 @@ public class StuckWin {
      */
 
     String[] jouerIA(char couleur) {
-
-      // votre code ici. Supprimer la ligne ci-dessous.
+      int maxL = 7;
+      int minL = 1;
+      int maxH = 6;
+      int minH = 0;
+      String lesPossibles = "";
+      do {
+        int hauteur = (int) (Math.random()*(maxH-minH)) + minH;
+        int largeur = (int) (Math.random()*(maxL-minL)) + minL;
+        lesPossibles =  Arrays.toString(possibleDests(couleur, hauteur, largeur));
+      } while (lesPossibles.charAt(1) != 'L' || lesPossibles.charAt(6) != 'D' || lesPossibles.charAt(11) != 'R');
 
       throw new java.lang.UnsupportedOperationException("à compléter");
 
@@ -273,15 +387,15 @@ public class StuckWin {
 
      * @param couleur
 
-     * @return
+     * @return 'R' ou 'B' si vainqueur, 'N' si partie pas finie
 
      */
 
     char finPartie(char couleur){
 
-      // votre code ici. Supprimer la ligne ci-dessous.
+      return 'N';
 
-      throw new java.lang.UnsupportedOperationException("à compléter");
+      //throw new java.lang.UnsupportedOperationException("Fonction finPartie");
 
     }
 
@@ -308,7 +422,6 @@ public class StuckWin {
         char tmp;
 
         int cpt = 0;
-
 
         // version console
 
