@@ -82,9 +82,9 @@ public class StuckWin {
 
      * @param couleur couleur du pion à jouer
 
-     * @param idLettre id de la colonne du pion à jouer
+     * @param idLettre id de la ligne du pion à jouer
 
-     * @param idCol id de la ligne du pion à jouer
+     * @param idCol id de la colonne du pion à jouer
 
      * @return tableau des trois positions jouables par le pion (redondance possible sur les bords)
 
@@ -92,7 +92,7 @@ public class StuckWin {
 
     String[] possibleDests(char couleur, int idLettre, int idCol){
 
-      // possibleDests(B, A, 7) devrait retourner un tableau vide
+      // votre code ici. Supprimer la ligne ci-dessous.
 
       throw new java.lang.UnsupportedOperationException("à compléter");
 
@@ -130,50 +130,50 @@ public class StuckWin {
             }
         }
         System.out.println("");
-      }
+    }
 
       // Affichage console Jeu
 
-      // Affichage StdDraw
-      StdDraw.setXscale(-10, 10);
-      StdDraw.setYscale(-10, 10);
+    // Affichage StdDraw
+    StdDraw.setXscale(-10, 10);
+    StdDraw.setYscale(-10, 10);
 
-      for(int it = 0; it < state.length; it++) {
-        int letter = 65;
-        double hauteur = 5-it*0.85;
-        double largeur = 0;
-        if (it<4){
-          largeur = 0-it*1.5;
-        } else {
-          largeur = -4.5;
-          hauteur = 7.5-it*1.7;
+    for(int it = 0; it < state.length; it++) {
+      int letter = 65;
+      double hauteur = 5-it*0.85;
+      double largeur = 0;
+      if (it<4){
+        largeur = 0-it*1.5;
+      } else {
+         largeur = -4.5;
+         hauteur = 7.5-it*1.7;
           letter += (it-3);
-        }
-        for (int e = 1; e < state.length+1; e++){
-          if (state[it][e] != '-') {
-            StdDraw.setPenColor(StdDraw.BLACK);
-            hexagon(largeur, hauteur, 1);
-            if (state[it][e] == 'B') {
-              StdDraw.setPenColor(StdDraw.BLUE);
-            } else if (state[it][e] == 'R') {
-              StdDraw.setPenColor(StdDraw.RED);
-            } else {
-              StdDraw.setPenColor(StdDraw.WHITE);
-            }
-            StdDraw.filledCircle(largeur, hauteur, 0.7);
-            hauteur -= 0.9;
-            largeur += 1.5;
+      }
+      for (int e = 1; e < state.length+1; e++){
+        if (state[it][e] != '-') {
+          StdDraw.setPenColor(StdDraw.BLACK);
+          hexagon(largeur, hauteur, 1);
+          if (state[it][e] == 'B') {
+            StdDraw.setPenColor(StdDraw.BLUE);
+          } else if (state[it][e] == 'R') {
+            StdDraw.setPenColor(StdDraw.RED);
+          } else {
             StdDraw.setPenColor(StdDraw.WHITE);
-            if (state[it][e] == '.') {
-              StdDraw.setPenColor(StdDraw.BLACK);
-            }
-            String nomCase = String.valueOf((char)letter) + String.valueOf(7-it); //char et int a convertir en String
-            StdDraw.text(largeur-1.5, hauteur+0.85, nomCase);
-            letter += 1;
           }
+          StdDraw.filledCircle(largeur, hauteur, 0.7);
+          hauteur -= 0.9;
+          largeur += 1.5;
+          StdDraw.setPenColor(StdDraw.WHITE);
+          if (state[it][e] == '.') {
+            StdDraw.setPenColor(StdDraw.BLACK);
+          }
+          String nomCase = String.valueOf((char)letter) + String.valueOf(7-it); //char et int a convertir en String
+          StdDraw.text(largeur-1.5, hauteur+0.85, nomCase);
+          letter += 1;
         }
       }
     }
+  }
 
   /**
 
@@ -184,15 +184,15 @@ public class StuckWin {
      * @param size taille de l'héxagone
 
      */
-    void hexagon(double x, double y, double size) {
-      double theta = (2*Math.PI)/6;
-      for (int i=0; i<=6 ; i++){
-        StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
-    }
-        
-
+  void hexagon(double x, double y, double size) {
+    double theta = (2*Math.PI)/6;
+    for (int i=0; i<=6 ; i++){
+      StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
+  }
       
-    }
+
+    
+  }
 
 
     /**
