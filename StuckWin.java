@@ -10,7 +10,6 @@ import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import com.oracle.webservices.internal.impl.internalspi.encoding.StreamDecoder;
 
-
 public class StuckWin {
 
     static final Scanner input = new Scanner(System.in);
@@ -73,16 +72,21 @@ public class StuckWin {
       
       int idColSource = (lcSource.charAt(1)-48)+(lcSource.charAt(0)-68);
       int idColDest = (lcDest.charAt(1)-48)+(lcDest.charAt(0)-68);
-      System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
-
+      //System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
+      if (lcSource.toUpperCase().equals("EXIT") || lcDest.toUpperCase().equals("EXIT")) {
+        return Result.EXIT;
+      }
+      if (idLineSource < 0 || idLineSource > 6 || idLineDest < 0 || idLineDest > 6 || idColSource < 1 || idColSource > 7 || idColDest < 1 || idColDest > 7) {
+        return Result.EXT_BOARD;
+      }
       if (state[idLineSource][idColSource] == '.') {
         return Result.EMPTY_SRC;
       }
-      if (state[idLineDest][idColDest] != '.') {
-        return Result.DEST_NOT_FREE;
-      }
       if (state[idLineSource][idColSource] != couleur) {
         return Result.BAD_COLOR;
+      }
+      if (state[idLineDest][idColDest] != '.') {
+        return Result.DEST_NOT_FREE;
       }
       String isTooFar =  Arrays.toString(possibleDests(couleur, idLineSource, idColSource));
       System.out.println(isTooFar);
@@ -235,7 +239,7 @@ public class StuckWin {
         System.out.println("");
     }
 
-      // Affichage console Jeu
+    // Affichage console Jeu
 
     // Affichage StdDraw
     StdDraw.setXscale(-10, 10);
@@ -279,6 +283,7 @@ public class StuckWin {
         }
       }
     }
+    StdDraw.show();
   }
 
   /**
@@ -294,11 +299,21 @@ public class StuckWin {
     double theta = (2*Math.PI)/6;
     for (int i=0; i<=6 ; i++){
       StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
+    }     
   }
-      
 
-    
-  }
+  /**
+
+     * Créer une animation de déplacement de pion
+
+     * @param coordSource coordonnées X
+     * @param coordDest coordonnées Y
+     * @param char couleur du joueur actuel
+
+     */
+    void animationArrow(char couleur, String coordSource, String coordDest){
+      System.out.println("test");
+    }
 
 
     /**
@@ -312,9 +327,9 @@ public class StuckWin {
      */
 
     String[] jouerIA(char couleur) {
-      int maxL = 7;
+      int maxL = 8;
       int minL = 1;
-      int maxH = 6;
+      int maxH = 7;
       int minH = 0;
       String[] tabIa = new String[2];
       String lesPossibles = "";
@@ -375,21 +390,21 @@ public class StuckWin {
 
           case 'B':
             if (lesPossibles.charAt(1) == 'L' && choixMv == 1) {
-              tabIa[1] = Character.toString(returnedLargeur) + Integer.toString(returnedHauteur-1);
+              tabIa[1] = Character.toString(returnedLargeur-1) + Integer.toString(returnedHauteur);
               break;
             }
             if (lesPossibles.charAt(6) == 'T' && choixMv == 2) {
-              tabIa[1] = Character.toString(returnedLargeur) + Integer.toString(returnedHauteur-1);
+              tabIa[1] = Character.toString(returnedLargeur-1) + Integer.toString(returnedHauteur+1);
               break;
             }
             if (lesPossibles.charAt(11) == 'R' && choixMv == 3) {
-              tabIa[1] = Character.toString(returnedLargeur-1) + Integer.toString(returnedHauteur+1);
+              tabIa[1] = Character.toString(returnedLargeur) + Integer.toString(returnedHauteur+1);
               break;
             }
             isValid = false;
             break;
           default:
-          throw new java.lang.UnsupportedOperationException("pas de couleur");
+            throw new java.lang.UnsupportedOperationException("pas de couleur");
         }
       } while (isValid == false);
       
@@ -464,16 +479,34 @@ public class StuckWin {
      */
 
     char finPartie(char couleur){
-
-      return 'N';
+      for(int it = 0; it < state.length; it++) {
+        for (int e = 1; e < state.length+1; e++){
+          if (state[it][e] == couleur) {
+            String canMove =  Arrays.toString(possibleDests(couleur, it, e));
+            //System.out.println("fonction finPartie : " + canMove);
+            if (!"[XXX, XXX, XXX]".equals(canMove)){
+              return 'N';
+            }
+          }
+        }
+      }
+      return couleur;
 
       //throw new java.lang.UnsupportedOperationException("Fonction finPartie");
 
     }
 
+    void afficheVainqueur(char couleur) {
+      StdDraw.setXscale(-10, 10);
+      StdDraw.setYscale(-10, 10);
+      StdDraw.filledRectangle(-5, 5, 1, 1);
+    }
+
 
 
     public static void main(String[] args) {
+
+        StdDraw.enableDoubleBuffering();
 
         StuckWin jeu = new StuckWin();
 
@@ -506,7 +539,8 @@ public class StuckWin {
 
                   status = Result.EXIT;
 
-                  reponse = jeu.jouer(curCouleur);
+                  reponse = jeu.jouerIA(curCouleur);
+                  //reponse = jeu.jouer(curCouleur);
 
                   src = reponse[0];
 
@@ -535,6 +569,7 @@ public class StuckWin {
         } while(partie =='N'); // TODO affiche vainqueur
 
         System.out.printf("Victoire : " + partie + " (" + (cpt/2) + " coups)");
+        jeu.afficheVainqueur(partie);
 
     }
 
