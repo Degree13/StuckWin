@@ -503,6 +503,9 @@ public class StuckWin {
     public static void main(String[] args) {
 
         StdDraw.enableDoubleBuffering();
+        int victoiresBleu = 0;
+        int victoiresRouge = 0;
+        for (int i = 0; i < 100000; i++){
 
         StuckWin jeu = new StuckWin();
 
@@ -529,7 +532,7 @@ public class StuckWin {
         do {
 
               // séquence pour Bleu ou rouge
-              jeu.affiche();
+              //jeu.affiche();
 
               do {
 
@@ -566,7 +569,14 @@ public class StuckWin {
 
         System.out.printf("Victoire : " + partie + " (" + (cpt/2) + " coups)");
         //jeu.afficheVainqueur(partie);
-
+        if (partie == 'R'){
+          victoiresRouge++;
+        } else {
+          victoiresBleu++;
+        }
+      }
+      System.out.println("");
+      System.out.println("Victoires Bleu :" + victoiresBleu + " Victoires Rouge :" + victoiresRouge);
     }
 
 }
