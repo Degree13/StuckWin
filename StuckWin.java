@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Random;
 
 import java.util.Scanner;
-import java.util.random.RandomGenerator;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
@@ -376,12 +375,14 @@ public class StuckWin {
               break;
             }
             if (lesPossibles.charAt(6) == 'D' && choixMv == 2) {
-              tabIa[1] = Character.toString(returnedLargeur+1) + Integer.toString(returnedHauteur-1);
+              returnedLargeur = (char)((int)returnedLargeur+1);
+              tabIa[1] = Character.toString(returnedLargeur) + Integer.toString(returnedHauteur-1);
               System.out.println("OK GOT IT IM : " + couleur + " GOING DOWN");
               break;
             }
             if (lesPossibles.charAt(11) == 'R' && choixMv == 3) {
-              tabIa[1] = Character.toString(returnedLargeur+1) + Integer.toString(returnedHauteur);
+              returnedLargeur = (char)((int)returnedLargeur+1);
+              tabIa[1] = Character.toString(returnedLargeur) + Integer.toString(returnedHauteur);
               System.out.println("OK GOT IT IM : " + couleur + " GOING RIGHT");
               break;
             }
@@ -390,11 +391,13 @@ public class StuckWin {
 
           case 'B':
             if (lesPossibles.charAt(1) == 'L' && choixMv == 1) {
-              tabIa[1] = Character.toString(returnedLargeur-1) + Integer.toString(returnedHauteur);
+              returnedLargeur = (char)((int)returnedLargeur-1);
+              tabIa[1] = Character.toString(returnedLargeur) + Integer.toString(returnedHauteur);
               break;
             }
             if (lesPossibles.charAt(6) == 'T' && choixMv == 2) {
-              tabIa[1] = Character.toString(returnedLargeur-1) + Integer.toString(returnedHauteur+1);
+              returnedLargeur = (char)((int)returnedLargeur-1);
+              tabIa[1] = Character.toString(returnedLargeur) + Integer.toString(returnedHauteur+1);
               break;
             }
             if (lesPossibles.charAt(11) == 'R' && choixMv == 3) {
@@ -408,7 +411,9 @@ public class StuckWin {
         }
       } while (isValid == false);
       
-
+      if ("".equals(tabIa[0]) || "".equals(tabIa[1])) {
+        throw new java.lang.UnsupportedOperationException("Fonction JouerIA : tabIa vide");
+      }
       return tabIa;
       //throw new java.lang.UnsupportedOperationException("à compléter");
 
@@ -569,7 +574,7 @@ public class StuckWin {
         } while(partie =='N'); // TODO affiche vainqueur
 
         System.out.printf("Victoire : " + partie + " (" + (cpt/2) + " coups)");
-        jeu.afficheVainqueur(partie);
+        //jeu.afficheVainqueur(partie);
 
     }
 
