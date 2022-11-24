@@ -1,3 +1,4 @@
+import java.nio.channels.NonReadableChannelException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,8 @@ public class StuckWin {
     final char[] joueurs = {'B', 'R'};
 
     final int SIZE = 8;
+
+    final int SCALE = 10;
 
     final char VIDE = '.';
 
@@ -241,8 +244,8 @@ public class StuckWin {
     // Affichage console Jeu
 
     // Affichage StdDraw
-    StdDraw.setXscale(-10, 10);
-    StdDraw.setYscale(-10, 10);
+    StdDraw.setXscale(-SCALE, SCALE);
+    StdDraw.setYscale(-SCALE, SCALE);
     StdDraw.clear();
 
     for(int it = 0; it < state.length; it++) {
@@ -252,9 +255,9 @@ public class StuckWin {
       if (it<4){
         largeur = 0-it*1.5;
       } else {
-         largeur = -4.5;
-         hauteur = 7.5-it*1.7;
-          letter += (it-3);
+        largeur = -4.5;
+        hauteur = 7.5-it*1.7;
+        letter += (it-3);
       }
       for (int e = 1; e < state.length+1; e++){
         if (state[it][e] != '-') {
@@ -429,15 +432,25 @@ public class StuckWin {
 
         String[] mvtIa;
 
+        double coordsX;
+        double coordsY;
+
         switch(couleur) {
 
             case 'B':
 
                 System.out.println("Mouvement " + couleur);
 
-                src = input.next();
+                do {
+                  //src = input.next();
+                  //dst = input.next();
 
-                dst = input.next();
+                  coordsX = StdDraw.mouseX();
+                  coordsY = StdDraw.mouseY();
+                  System.out.println(coordsX + " souris " + coordsY);
+                } while ("".equals(src) && "".equals(dst) || !StdDraw.isMousePressed());
+
+                System.out.println(coordsX + " " + coordsY);
 
                 System.out.println(src + "->" + dst);
 
@@ -498,6 +511,38 @@ public class StuckWin {
       StdDraw.filledRectangle(-5, 5, 1, 1);
     }
 
+    void createCoordsTab(){
+      double coordsTab[][][] = new double[7][8][2];
+      for(int it = 0; it < state.length; it++) {
+        double hauteur;
+        double largeur;
+        if (it<4){
+          //largeur = 0-it*1.5;
+          largeur = -4.5;
+          hauteur = (-0.05*it+7.70)-it*1.7;
+        } else {
+          largeur = -4.5;
+          hauteur = 7.5-it*1.7;
+        }
+        for (int e = 1; e < state.length+1; e++){
+          if (state[it][e] != '-') {
+            coordsTab[it][e][0] = hauteur;
+            coordsTab[it][e][1] = largeur;
+            StdDraw.setPenColor(StdDraw.GREEN);
+            StdDraw.filledCircle(largeur, hauteur, 0.7);
+          } else {
+            //Set coordsTab to an impossible number to make tests later on
+            coordsTab[it][e][0] = SCALE+1;
+            coordsTab[it][e][1] = SCALE+1;
+          }
+          System.out.println(coordsTab[it][e][0] + " " + coordsTab[it][e][1]);
+          StdDraw.show();
+          hauteur -= 0.9;
+          largeur += 1.5;
+          //StdDraw.text(largeur-1.5, hauteur+0.85, nomCase);
+        }
+      }
+    }
 
 
     public static void main(String[] args) {
@@ -505,78 +550,81 @@ public class StuckWin {
         StdDraw.enableDoubleBuffering();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
-        for (int i = 0; i < 100000; i++){
+        int nombreDeParties = 2;
+        for (int i = 0; i < nombreDeParties; i++){
 
-        StuckWin jeu = new StuckWin();
+          StuckWin jeu = new StuckWin();
 
-        String src = "";
+          jeu.createCoordsTab();
 
-        String dest;
+          String src = "";
 
-        String[] reponse;
+          String dest;
 
-        Result status;
+          String[] reponse;
 
-        char partie = 'N';
+          Result status;
 
-        char curCouleur = jeu.joueurs[0];
+          char partie = 'N';
 
-        char nextCouleur = jeu.joueurs[1];
+          char curCouleur = jeu.joueurs[0];
 
-        char tmp;
+          char nextCouleur = jeu.joueurs[1];
 
-        int cpt = 0;
+          char tmp;
 
-        // version console
+          int cpt = 0;
 
-        do {
+          // version console
 
-              // séquence pour Bleu ou rouge
-              //jeu.affiche();
+          do {
 
-              do {
+                // séquence pour Bleu ou rouge
+                jeu.affiche();
 
-                  status = Result.EXIT;
+                do {
 
-                  reponse = jeu.jouerIA(curCouleur);
-                  //reponse = jeu.jouer(curCouleur);
+                    status = Result.EXIT;
 
-                  src = reponse[0];
+                    //reponse = jeu.jouerIA(curCouleur);
+                    reponse = jeu.jouer(curCouleur);
 
-                  dest = reponse[1];
+                    src = reponse[0];
 
-                  if("q".equals(src))
+                    dest = reponse[1];
 
-                      return;
+                    if("q".equals(src))
 
-                  status = jeu.deplace(curCouleur, src, dest, ModeMvt.REAL);
+                        return;
 
-                  partie = jeu.finPartie(nextCouleur);
+                    status = jeu.deplace(curCouleur, src, dest, ModeMvt.REAL);
 
-                  System.out.println("status : "+status + " partie : " + partie);
+                    partie = jeu.finPartie(nextCouleur);
 
-              } while(status != Result.OK && partie=='N');
+                    System.out.println("status : "+status + " partie : " + partie);
 
-              tmp = curCouleur;
+                } while(status != Result.OK && partie=='N');
 
-              curCouleur = nextCouleur;
+                tmp = curCouleur;
 
-              nextCouleur = tmp;
+                curCouleur = nextCouleur;
 
-              cpt ++;
+                nextCouleur = tmp;
 
-        } while(partie =='N'); // TODO affiche vainqueur
+                cpt ++;
 
-        System.out.printf("Victoire : " + partie + " (" + (cpt/2) + " coups)");
-        //jeu.afficheVainqueur(partie);
-        if (partie == 'R'){
-          victoiresRouge++;
-        } else {
-          victoiresBleu++;
-        }
+          } while(partie =='N'); // TODO affiche vainqueur
+
+          System.out.printf("Victoire : " + partie + " (" + (cpt/2) + " coups)");
+          System.out.println(" ");
+          //jeu.afficheVainqueur(partie);
+          if (partie == 'R'){
+            victoiresRouge++;
+          } else {
+            victoiresBleu++;
+          }
+          jeu.createCoordsTab();
       }
-      System.out.println("");
       System.out.println("Victoires Bleu :" + victoiresBleu + " Victoires Rouge :" + victoiresRouge);
     }
-
 }
