@@ -512,6 +512,8 @@ public class StuckWin {
     }
 
     void createCoordsTab(){
+      StdDraw.setXscale(-10, 10);
+      StdDraw.setYscale(-10, 10);
       double coordsTab[][][] = new double[7][8][2];
       for(int it = 0; it < state.length; it++) {
         double hauteur;
@@ -551,6 +553,7 @@ public class StuckWin {
         int victoiresBleu = 0;
         int victoiresRouge = 0;
         int nombreDeParties = 2;
+        StdDraw.setCanvasSize(800, 800);
         for (int i = 0; i < nombreDeParties; i++){
 
           StuckWin jeu = new StuckWin();
@@ -586,8 +589,8 @@ public class StuckWin {
 
                     status = Result.EXIT;
 
-                    //reponse = jeu.jouerIA(curCouleur);
-                    reponse = jeu.jouer(curCouleur);
+                    reponse = jeu.jouerIA(curCouleur);
+                    //reponse = jeu.jouer(curCouleur);
 
                     src = reponse[0];
 
