@@ -441,16 +441,14 @@ public class StuckWin {
 
                 System.out.println("Mouvement " + couleur);
 
-                do {
-                  //src = input.next();
-                  //dst = input.next();
+                //do {
+                src = input.next();
+                dst = input.next();
 
-                  coordsX = StdDraw.mouseX();
-                  coordsY = StdDraw.mouseY();
-                  System.out.println(coordsX + " souris " + coordsY);
-                } while ("".equals(src) && "".equals(dst) || !StdDraw.isMousePressed());
-
-                System.out.println(coordsX + " " + coordsY);
+                  //coordsX = StdDraw.mouseX();
+                  //coordsY = StdDraw.mouseY();
+                  //System.out.println(coordsX + " souris " + coordsY);
+               // } while ("".equals(src) && "".equals(dst) || !StdDraw.isMousePressed());
 
                 System.out.println(src + "->" + dst);
 
@@ -552,13 +550,13 @@ public class StuckWin {
         StdDraw.enableDoubleBuffering();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
-        int nombreDeParties = 2;
+        int nombreDeParties = 1000;
         StdDraw.setCanvasSize(800, 800);
         for (int i = 0; i < nombreDeParties; i++){
 
           StuckWin jeu = new StuckWin();
 
-          jeu.createCoordsTab();
+          //jeu.createCoordsTab();
 
           String src = "";
 
@@ -589,8 +587,8 @@ public class StuckWin {
 
                     status = Result.EXIT;
 
-                    reponse = jeu.jouerIA(curCouleur);
-                    //reponse = jeu.jouer(curCouleur);
+                    //reponse = jeu.jouerIA(curCouleur);
+                    reponse = jeu.jouer(curCouleur);
 
                     src = reponse[0];
 
@@ -626,7 +624,7 @@ public class StuckWin {
           } else {
             victoiresBleu++;
           }
-          jeu.createCoordsTab();
+          //jeu.createCoordsTab();
       }
       System.out.println("Victoires Bleu :" + victoiresBleu + " Victoires Rouge :" + victoiresRouge);
     }
