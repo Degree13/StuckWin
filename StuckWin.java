@@ -69,15 +69,17 @@ public class StuckWin {
     Result deplace(char couleur, String lcSource, String lcDest,  ModeMvt mode) {
       //ATTENTION !!!!!!!!!!!!!!!!!! IL MANQUE ENCORE EXT_BOARD ET EXIT
       // Traduction des Strings en Ints exploitables avec le tableau
+      //System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
+      if (lcSource.length() != 2 || lcDest.length() != 2) { 
+        return Result.EXIT;
+      }
+      
       int idLineSource = 55-lcSource.charAt(1);
       int idLineDest = 55-lcDest.charAt(1);
       
       int idColSource = (lcSource.charAt(1)-48)+(lcSource.charAt(0)-68);
       int idColDest = (lcDest.charAt(1)-48)+(lcDest.charAt(0)-68);
-      //System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
-      if (lcSource.toUpperCase().equals("EXIT") || lcDest.toUpperCase().equals("EXIT")) {
-        return Result.EXIT;
-      }
+
       if (idLineSource < 0 || idLineSource > 6 || idLineDest < 0 || idLineDest > 6 || idColSource < 1 || idColSource > 7 || idColDest < 1 || idColDest > 7) {
         return Result.EXT_BOARD;
       }
@@ -458,11 +460,11 @@ public class StuckWin {
 
                 System.out.println("Mouvement " + couleur);
 
-                mvtIa = jouerIA(couleur);
-
-                src = mvtIa[0];
-
-                dst = mvtIa[1];
+                //mvtIa = jouerIA(couleur);
+                //src = mvtIa[0];
+                //dst = mvtIa[1];
+                src = input.next();
+                dst = input.next();
 
                 System.out.println(src + "->" + dst);
 
@@ -550,7 +552,7 @@ public class StuckWin {
         StdDraw.enableDoubleBuffering();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
-        int nombreDeParties = 1000;
+        int nombreDeParties = 1;
         StdDraw.setCanvasSize(800, 800);
         for (int i = 0; i < nombreDeParties; i++){
 
@@ -626,6 +628,7 @@ public class StuckWin {
           }
           //jeu.createCoordsTab();
       }
+      StdDraw.show();
       System.out.println("Victoires Bleu :" + victoiresBleu + " Victoires Rouge :" + victoiresRouge);
     }
 }
