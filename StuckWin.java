@@ -303,7 +303,12 @@ public class StuckWin {
   void hexagon(double x, double y, double size) {
     double theta = (2*Math.PI)/6;
     for (int i=0; i<=6 ; i++){
-      StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
+      double x1 = x + size * Math.cos(i * theta);
+      double y1 = y + size * Math.sin(i * theta);
+      double x2 = x + size * Math.cos((i + 1) * theta);
+      double y2 = y + size * Math.sin((i + 1) * theta);
+      StdDraw.line(x1, y1, x2, y2);
+      //StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
     }     
   }
 
@@ -345,7 +350,10 @@ public class StuckWin {
         hauteur = (int) (Math.random()*(maxH-minH)) + minH;
         largeur = (int) (Math.random()*(maxL-minL)) + minL;
         lesPossibles =  Arrays.toString(possibleDests(couleur, hauteur, largeur));
-      } while (lesPossibles.charAt(1) != 'L' && lesPossibles.charAt(6) != 'D' && lesPossibles.charAt(6) != 'T' && lesPossibles.charAt(11) != 'R' || state[hauteur][largeur] != couleur);
+      } while (lesPossibles.charAt(1) != 'L' && 
+      lesPossibles.charAt(6) != 'D' && 
+      lesPossibles.charAt(6) != 'T' && lesPossibles.charAt(11) != 'R' ||
+      state[hauteur][largeur] != couleur);
       //System.out.println(largeur);
       int returnedHauteur = 7-hauteur;
       char returnedLargeur = (char)(largeur+61+(7-returnedHauteur));
@@ -403,12 +411,14 @@ public class StuckWin {
             isValid = false;
             break;
           default:
-            throw new java.lang.UnsupportedOperationException("Fonction JourIA : pas de couleur valide");
+            String message = "Fonction JourIA : pas de couleur valide";
+            throw new java.lang.UnsupportedOperationException(message);
         }
       } while (isValid == false);
       
       if ("".equals(tabIa[0]) || "".equals(tabIa[1])) {
-        throw new java.lang.UnsupportedOperationException("Fonction JouerIA : tabIa vide");
+        String message = "Fonction JouerIA : tabIa vide";
+        throw new java.lang.UnsupportedOperationException(message);
       }
       return tabIa;
       //throw new java.lang.UnsupportedOperationException("à compléter");
@@ -552,7 +562,7 @@ public class StuckWin {
         StdDraw.enableDoubleBuffering();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
-        int nombreDeParties = 1;
+        int nombreDeParties = 10;
         StdDraw.setCanvasSize(800, 800);
         for (int i = 0; i < nombreDeParties; i++){
 
@@ -589,8 +599,8 @@ public class StuckWin {
 
                     status = Result.EXIT;
 
-                    //reponse = jeu.jouerIA(curCouleur);
-                    reponse = jeu.jouer(curCouleur);
+                    reponse = jeu.jouerIA(curCouleur);
+                    //reponse = jeu.jouer(curCouleur);
 
                     src = reponse[0];
 
