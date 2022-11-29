@@ -29,6 +29,8 @@ public class StuckWin {
 
     final char VIDE = '.';
 
+    int gamemode = 0;
+
     // 'B'=bleu 'R'=rouge '.'=vide '-'=n'existe pas
 
     char[][] state = {
@@ -308,23 +310,8 @@ public class StuckWin {
       double x2 = x + size * Math.cos((i + 1) * theta);
       double y2 = y + size * Math.sin((i + 1) * theta);
       StdDraw.line(x1, y1, x2, y2);
-      //StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
     }     
   }
-
-  /**
-
-     * Créer une animation de déplacement de pion
-
-     * @param coordSource coordonnées X
-     * @param coordDest coordonnées Y
-     * @param char couleur du joueur actuel
-
-     */
-    void animationArrow(char couleur, String coordSource, String coordDest){
-      System.out.println("test");
-    }
-
 
     /**
 
@@ -470,20 +457,20 @@ public class StuckWin {
 
                 System.out.println("Mouvement " + couleur);
 
-                //mvtIa = jouerIA(couleur);
-                //src = mvtIa[0];
-                //dst = mvtIa[1];
-                src = input.next();
-                dst = input.next();
+                if (gamemode == 1){
+                  src = input.next();
+                  dst = input.next();
+                } else {
+                  mvtIa = jouerIA(couleur);
+                  src = mvtIa[0];
+                  dst = mvtIa[1];
+                }
 
                 System.out.println(src + "->" + dst);
 
                 break;
-
         }
-
         return new String[]{src, dst};
-
     }
 
 
@@ -555,15 +542,39 @@ public class StuckWin {
         }
       }
     }
+    
+    int gamemodeSelect(){
+      gamemode = -1;
+      while (gamemode != 1 && gamemode != 2 && gamemode !=3){
+        System.out.println("Sélectionnez un mode de jeu : \n\t(1) PlayerVSPlayer \n\t(2) PlayerVSAI \n\t(3) AIVSAI");
+        gamemode = input.nextInt();
+      }
+      System.out.println("Mode sélectionné : " + gamemode);
+      return gamemode;
+    }
+
+    int nbPartiesSelect(){
+        int nbParties = 0;
+        while (nbParties < 1 || nbParties > 1000){
+          System.out.println("Entrez le nombre de parties désirés :");
+          nbParties = input.nextInt();
+        }
+        System.out.println("Nombre de parties : " + nbParties);
+        return nbParties;
+    }
 
 
     public static void main(String[] args) {
-
+        StuckWin jeuInit = new StuckWin();
         StdDraw.enableDoubleBuffering();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
-        int nombreDeParties = 10;
+        int nombreDeParties = 1;
         StdDraw.setCanvasSize(800, 800);
+        
+        int gamemode = jeuInit.gamemodeSelect();
+        nombreDeParties = jeuInit.nbPartiesSelect();
+
         for (int i = 0; i < nombreDeParties; i++){
 
           StuckWin jeu = new StuckWin();
@@ -598,8 +609,13 @@ public class StuckWin {
                 do {
 
                     status = Result.EXIT;
+                    if (gamemode == 3) {
+                      reponse = jeu.jouerIA(curCouleur);
+                    } else {
+                      reponse = jeu.jouer(curCouleur);
+                    }
+                    //reponse = jeu.jouerIA(curCouleur);
 
-                    reponse = jeu.jouerIA(curCouleur);
                     //reponse = jeu.jouer(curCouleur);
 
                     src = reponse[0];
