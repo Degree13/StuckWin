@@ -69,7 +69,6 @@ public class StuckWin {
      */
 
     Result deplace(char couleur, String lcSource, String lcDest,  ModeMvt mode) {
-      //ATTENTION !!!!!!!!!!!!!!!!!! IL MANQUE ENCORE EXT_BOARD ET EXIT
       // Traduction des Strings en Ints exploitables avec le tableau
       //System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
       if (lcSource.length() != 2 || lcDest.length() != 2) { 
@@ -258,9 +257,13 @@ public class StuckWin {
       double largeur = 0;
       if (it<4){
         largeur = 0-it*1.5;
+      } else if (it < 5) {
+        largeur = -4.5;
+        hauteur = 7.53-it*1.7;
+        letter += (it-3);
       } else {
         largeur = -4.5;
-        hauteur = 7.5-it*1.7;
+        hauteur = 7.565-it*1.71;
         letter += (it-3);
       }
       for (int e = 1; e < state.length+1; e++){
@@ -324,18 +327,18 @@ public class StuckWin {
      */
 
     String[] jouerIA(char couleur) {
-      int maxL = 8;
-      int minL = 1;
-      int maxH = 7;
-      int minH = 0;
+      final int MAXL = 8;
+      final int MINL = 1;
+      final int MAXH = 7;
+      final int MINH = 0;
       String[] tabIa = new String[2];
       String lesPossibles = "";
       int hauteur;
       int largeur;
 
       do {
-        hauteur = (int) (Math.random()*(maxH-minH)) + minH;
-        largeur = (int) (Math.random()*(maxL-minL)) + minL;
+        hauteur = (int) (Math.random()*(MAXH-MINH)) + MINH;
+        largeur = (int) (Math.random()*(MAXL-MINL)) + MINL;
         lesPossibles =  Arrays.toString(possibleDests(couleur, hauteur, largeur));
       } while (lesPossibles.charAt(1) != 'L' && 
       lesPossibles.charAt(6) != 'D' && 
@@ -349,13 +352,13 @@ public class StuckWin {
       //System.out.println(tabIa[0]);
       //System.out.println("couleur " + couleur);
       //System.out.println(Arrays.toString(possibleDests(couleur, hauteur, largeur)));
-      int maxR = 4;
-      int minR = 1;
+      final int MAXR = 4;
+      final int MINR = 1;
       boolean isValid;
 
       do {  
         isValid = true;
-        int choixMv = (int) (Math.random()*(maxR-minR)) + minR;
+        int choixMv = (int) (Math.random()*(MAXR-MINR)) + MINR;
 
         switch(couleur){
 
@@ -566,11 +569,26 @@ public class StuckWin {
 
     public static void main(String[] args) {
         StuckWin jeuInit = new StuckWin();
-        StdDraw.enableDoubleBuffering();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
         int nombreDeParties = 1;
-        StdDraw.setCanvasSize(800, 800);
+        int counter = 0;
+        StdDraw.setXscale(-10, 10);
+        StdDraw.setYscale(-10, 10);
+        
+
+        StdDraw.setCanvasSize(1080, 1080);
+        while (counter < 250 && !StdDraw.hasNextKeyTyped()){
+          StdDraw.picture(0.5, 0.5, "STUCKWIN_INTRO.gif", 1.5, 1);
+          counter++;
+        }
+        StdDraw.clear();
+        while (!StdDraw.hasNextKeyTyped()){
+            StdDraw.picture(0.5, 0.5, "STUCKWIN_WAITING.gif", 1.5, 1);
+        }
+        StdDraw.clear();
+
+        StdDraw.enableDoubleBuffering();
         
         int gamemode = jeuInit.gamemodeSelect();
         nombreDeParties = jeuInit.nbPartiesSelect();
