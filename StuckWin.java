@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
@@ -29,6 +30,10 @@ public class StuckWin {
 
     final char VIDE = '.';
 
+    int gamemode = 0;
+
+    public static int affichageG = -1;
+
     // 'B'=bleu 'R'=rouge '.'=vide '-'=n'existe pas
 
     char[][] state = {
@@ -49,6 +54,8 @@ public class StuckWin {
 
     };
 
+    double coordsTab[][][] = new double[7][8][2];
+
 
     /**
 
@@ -67,17 +74,18 @@ public class StuckWin {
      */
 
     Result deplace(char couleur, String lcSource, String lcDest,  ModeMvt mode) {
-      //ATTENTION !!!!!!!!!!!!!!!!!! IL MANQUE ENCORE EXT_BOARD ET EXIT
       // Traduction des Strings en Ints exploitables avec le tableau
+      //System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
+      if (lcSource.length() != 2 || lcDest.length() != 2) { 
+        return Result.EXIT;
+      }
+      
       int idLineSource = 55-lcSource.charAt(1);
       int idLineDest = 55-lcDest.charAt(1);
       
       int idColSource = (lcSource.charAt(1)-48)+(lcSource.charAt(0)-68);
       int idColDest = (lcDest.charAt(1)-48)+(lcDest.charAt(0)-68);
-      //System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" + idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" + idLineDest);
-      if (lcSource.toUpperCase().equals("EXIT") || lcDest.toUpperCase().equals("EXIT")) {
-        return Result.EXIT;
-      }
+
       if (idLineSource < 0 || idLineSource > 6 || idLineDest < 0 || idLineDest > 6 || idColSource < 1 || idColSource > 7 || idColDest < 1 || idColDest > 7) {
         return Result.EXT_BOARD;
       }
@@ -243,7 +251,8 @@ public class StuckWin {
 
     // Affichage console Jeu
 
-    // Affichage StdDraw
+  }
+  void affichageGraphique(){
     StdDraw.setXscale(-SCALE, SCALE);
     StdDraw.setYscale(-SCALE, SCALE);
     StdDraw.clear();
@@ -254,9 +263,13 @@ public class StuckWin {
       double largeur = 0;
       if (it<4){
         largeur = 0-it*1.5;
+      } else if (it < 5) {
+        largeur = -4.5;
+        hauteur = 7.53-it*1.7;
+        letter += (it-3);
       } else {
         largeur = -4.5;
-        hauteur = 7.5-it*1.7;
+        hauteur = 7.565-it*1.71;
         letter += (it-3);
       }
       for (int e = 1; e < state.length+1; e++){
@@ -291,7 +304,7 @@ public class StuckWin {
 
   /**
 
-     * Dessin un héxagone
+     * Dessine un héxagone
 
      * @param x coordonnées X
      * @param y coordonnées Y
@@ -301,23 +314,13 @@ public class StuckWin {
   void hexagon(double x, double y, double size) {
     double theta = (2*Math.PI)/6;
     for (int i=0; i<=6 ; i++){
-      StdDraw.line((Math.cos(i*theta)*size)+x, (Math.sin(i*theta)*size)+y, (Math.cos((i+1)*theta)*size)+x, (Math.sin((i+1)*theta)*size)+y);
+      double x1 = x + size * Math.cos(i * theta);
+      double y1 = y + size * Math.sin(i * theta);
+      double x2 = x + size * Math.cos((i + 1) * theta);
+      double y2 = y + size * Math.sin((i + 1) * theta);
+      StdDraw.line(x1, y1, x2, y2);
     }     
   }
-
-  /**
-
-     * Créer une animation de déplacement de pion
-
-     * @param coordSource coordonnées X
-     * @param coordDest coordonnées Y
-     * @param char couleur du joueur actuel
-
-     */
-    void animationArrow(char couleur, String coordSource, String coordDest){
-      System.out.println("test");
-    }
-
 
     /**
 
@@ -330,20 +333,23 @@ public class StuckWin {
      */
 
     String[] jouerIA(char couleur) {
-      int maxL = 8;
-      int minL = 1;
-      int maxH = 7;
-      int minH = 0;
+      final int MAXL = 8;
+      final int MINL = 1;
+      final int MAXH = 7;
+      final int MINH = 0;
       String[] tabIa = new String[2];
       String lesPossibles = "";
       int hauteur;
       int largeur;
 
       do {
-        hauteur = (int) (Math.random()*(maxH-minH)) + minH;
-        largeur = (int) (Math.random()*(maxL-minL)) + minL;
+        hauteur = (int) (Math.random()*(MAXH-MINH)) + MINH;
+        largeur = (int) (Math.random()*(MAXL-MINL)) + MINL;
         lesPossibles =  Arrays.toString(possibleDests(couleur, hauteur, largeur));
-      } while (lesPossibles.charAt(1) != 'L' && lesPossibles.charAt(6) != 'D' && lesPossibles.charAt(6) != 'T' && lesPossibles.charAt(11) != 'R' || state[hauteur][largeur] != couleur);
+      } while (lesPossibles.charAt(1) != 'L' && 
+      lesPossibles.charAt(6) != 'D' && 
+      lesPossibles.charAt(6) != 'T' && lesPossibles.charAt(11) != 'R' ||
+      state[hauteur][largeur] != couleur);
       //System.out.println(largeur);
       int returnedHauteur = 7-hauteur;
       char returnedLargeur = (char)(largeur+61+(7-returnedHauteur));
@@ -352,13 +358,13 @@ public class StuckWin {
       //System.out.println(tabIa[0]);
       //System.out.println("couleur " + couleur);
       //System.out.println(Arrays.toString(possibleDests(couleur, hauteur, largeur)));
-      int maxR = 4;
-      int minR = 1;
+      final int MAXR = 4;
+      final int MINR = 1;
       boolean isValid;
 
       do {  
         isValid = true;
-        int choixMv = (int) (Math.random()*(maxR-minR)) + minR;
+        int choixMv = (int) (Math.random()*(MAXR-MINR)) + MINR;
 
         switch(couleur){
 
@@ -401,12 +407,14 @@ public class StuckWin {
             isValid = false;
             break;
           default:
-            throw new java.lang.UnsupportedOperationException("Fonction JourIA : pas de couleur valide");
+            String message = "Fonction JourIA : pas de couleur valide";
+            throw new java.lang.UnsupportedOperationException(message);
         }
       } while (isValid == false);
       
       if ("".equals(tabIa[0]) || "".equals(tabIa[1])) {
-        throw new java.lang.UnsupportedOperationException("Fonction JouerIA : tabIa vide");
+        String message = "Fonction JouerIA : tabIa vide";
+        throw new java.lang.UnsupportedOperationException(message);
       }
       return tabIa;
       //throw new java.lang.UnsupportedOperationException("à compléter");
@@ -441,16 +449,21 @@ public class StuckWin {
 
                 System.out.println("Mouvement " + couleur);
 
-                do {
-                  //src = input.next();
-                  //dst = input.next();
-
+                if (affichageG == 1){
+                  do {
                   coordsX = StdDraw.mouseX();
                   coordsY = StdDraw.mouseY();
+                  //System.out.println(coordsX + " souris " + coordsY);
+                  } while (!StdDraw.isMousePressed());
                   System.out.println(coordsX + " souris " + coordsY);
-                } while ("".equals(src) && "".equals(dst) || !StdDraw.isMousePressed());
-
-                System.out.println(coordsX + " " + coordsY);
+                  closestCoords(coordsTab, coordsX, coordsY);
+                  //src et dst a dégager
+                  src = input.next();
+                  dst = input.next();
+                } else {
+                  src = input.next();
+                  dst = input.next();
+                }
 
                 System.out.println(src + "->" + dst);
 
@@ -460,20 +473,28 @@ public class StuckWin {
 
                 System.out.println("Mouvement " + couleur);
 
-                mvtIa = jouerIA(couleur);
-
-                src = mvtIa[0];
-
-                dst = mvtIa[1];
+                if (gamemode == 1){ //Si JoueurvsJoueur
+                  if (affichageG == 1){ //Si Affichage graphique activé
+                    do { //Prendre les coordonnées de la souris
+                    coordsX = StdDraw.mouseX();
+                    coordsY = StdDraw.mouseY();
+                    //System.out.println(coordsX + " souris " + coordsY);
+                    } while (!StdDraw.isMousePressed());
+                  } else {
+                    src = input.next();
+                    dst = input.next();
+                  }
+                } else {
+                  mvtIa = jouerIA(couleur);
+                  src = mvtIa[0];
+                  dst = mvtIa[1];
+                }
 
                 System.out.println(src + "->" + dst);
 
                 break;
-
         }
-
         return new String[]{src, dst};
-
     }
 
 
@@ -500,9 +521,7 @@ public class StuckWin {
         }
       }
       return couleur;
-
       //throw new java.lang.UnsupportedOperationException("Fonction finPartie");
-
     }
 
     void afficheVainqueur(char couleur) {
@@ -514,17 +533,15 @@ public class StuckWin {
     void createCoordsTab(){
       StdDraw.setXscale(-10, 10);
       StdDraw.setYscale(-10, 10);
-      double coordsTab[][][] = new double[7][8][2];
       for(int it = 0; it < state.length; it++) {
-        double hauteur;
-        double largeur;
-        if (it<4){
-          //largeur = 0-it*1.5;
+        double hauteur = 5-it*0.85;
+        double largeur = 0;
+        if (it < 5) {
           largeur = -4.5;
-          hauteur = (-0.05*it+7.70)-it*1.7;
+          hauteur = 7.53-it*1.7;
         } else {
           largeur = -4.5;
-          hauteur = 7.5-it*1.7;
+          hauteur = 7.565-it*1.71;
         }
         for (int e = 1; e < state.length+1; e++){
           if (state[it][e] != '-') {
@@ -546,19 +563,95 @@ public class StuckWin {
       }
     }
 
+    void closestCoords(double[][][] coordsTab, double x, double y){
+      double radius = 1;
+      for (int it = 0; it < state.length; it++) {
+        for (int e = 1; e < state.length+1; e++){
+          double x2 = coordsTab[it][e][0];
+          double y2 = coordsTab[it][e][1]; 
+          double distance = Math.hypot(x - x2, y - y2);
+          if (distance <= radius) {
+            System.out.println("Dans un rayon" + distance);
+          } else {
+            System.out.println("Pas dans un rayon" + distance);
+          }
+        }
+      }
+    }
+    
+    
+    int gamemodeSelect(){
+      gamemode = -1;
+      while (gamemode != 1 && gamemode != 2 && gamemode !=3){
+        System.out.println("Sélectionnez un mode de jeu : \n\t(1) PlayerVSPlayer \n\t(2) PlayerVSAI \n\t(3) AIVSAI");
+        gamemode = input.nextInt();
+      }
+      System.out.println("Mode sélectionné : " + gamemode);
+      return gamemode;
+    }
 
-    public static void main(String[] args) {
+    int nbPartiesSelect(){
+        int nbParties = 0;
+        while (nbParties < 1 || nbParties > 1000){
+          try {
+            System.out.println("Entrez le nombre de parties désirés : ");
+            nbParties = input.nextInt();
+          } catch (InputMismatchException e) {
+            System.out.println("Entrée invalide, réessayez");
+          }
+        }
+        System.out.println("Nombre de parties : " + nbParties);
+        return nbParties;
+    }
 
-        StdDraw.enableDoubleBuffering();
+    void introStuckWin(){
+      int counter = 0;
+      while (counter < 40 && !StdDraw.hasNextKeyTyped()){
+        StdDraw.picture(0.5, 0.5, "STUCKWIN_OPEN.gif", 1.5, 1);
+        counter++;
+      }
+      while (!StdDraw.hasNextKeyTyped()){
+          StdDraw.picture(0.5, 0.5, "STUCKWIN_WAIT.gif", 1.5, 1);
+      }
+      StdDraw.clear();
+      while (counter < 85){
+        StdDraw.picture(0.5, 0.5, "STUCKWIN_CLOSE.gif", 1.5, 1);
+        counter++;
+      }
+      StdDraw.clear();
+    }
+
+
+    public static void main(String[] args){
+        StuckWin jeuInit = new StuckWin();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
-        int nombreDeParties = 10;
-        StdDraw.setCanvasSize(800, 800);
+        int nombreDeParties = 1;
+
+        while (StuckWin.affichageG != 1 && StuckWin.affichageG !=2){
+          System.out.println("Voulez-vous afficher les graphiques ? (1) oui (2) non");
+          StuckWin.affichageG = input.nextInt();
+        }
+        
+        if (StuckWin.affichageG == 1){
+          StdDraw.setXscale(-10, 10);
+          StdDraw.setYscale(-10, 10);
+          StdDraw.setCanvasSize(1080, 1080);
+          
+          jeuInit.introStuckWin();
+  
+          StdDraw.enableDoubleBuffering();
+        }
+
+        jeuInit.createCoordsTab();
+        int gamemode = jeuInit.gamemodeSelect();
+        nombreDeParties = jeuInit.nbPartiesSelect();
+
         for (int i = 0; i < nombreDeParties; i++){
 
           StuckWin jeu = new StuckWin();
 
-          jeu.createCoordsTab();
+          //jeu.createCoordsTab();
 
           String src = "";
 
@@ -584,12 +677,20 @@ public class StuckWin {
 
                 // séquence pour Bleu ou rouge
                 jeu.affiche();
+                if (StuckWin.affichageG == 1){
+                  jeu.affichageGraphique();
+                }
 
                 do {
 
                     status = Result.EXIT;
+                    if (gamemode == 3) {
+                      reponse = jeu.jouerIA(curCouleur);
+                    } else {
+                      reponse = jeu.jouer(curCouleur);
+                    }
+                    //reponse = jeu.jouerIA(curCouleur);
 
-                    reponse = jeu.jouerIA(curCouleur);
                     //reponse = jeu.jouer(curCouleur);
 
                     src = reponse[0];
@@ -626,8 +727,9 @@ public class StuckWin {
           } else {
             victoiresBleu++;
           }
-          jeu.createCoordsTab();
+          //jeu.createCoordsTab();
       }
+      StdDraw.show();
       System.out.println("Victoires Bleu :" + victoiresBleu + " Victoires Rouge :" + victoiresRouge);
     }
 }
