@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
@@ -31,6 +32,8 @@ public class StuckWin {
 
     int gamemode = 0;
 
+    public static int affichageG = -1;
+
     // 'B'=bleu 'R'=rouge '.'=vide '-'=n'existe pas
 
     char[][] state = {
@@ -50,6 +53,8 @@ public class StuckWin {
             {'-', 'B', 'B', 'B', 'B', '-', '-', '-'},
 
     };
+
+    double coordsTab[][][] = new double[7][8][2];
 
 
     /**
@@ -246,7 +251,8 @@ public class StuckWin {
 
     // Affichage console Jeu
 
-    // Affichage StdDraw
+  }
+  void affichageGraphique(){
     StdDraw.setXscale(-SCALE, SCALE);
     StdDraw.setYscale(-SCALE, SCALE);
     StdDraw.clear();
@@ -298,7 +304,7 @@ public class StuckWin {
 
   /**
 
-     * Dessin un héxagone
+     * Dessine un héxagone
 
      * @param x coordonnées X
      * @param y coordonnées Y
@@ -443,14 +449,21 @@ public class StuckWin {
 
                 System.out.println("Mouvement " + couleur);
 
-                //do {
-                src = input.next();
-                dst = input.next();
-
-                  //coordsX = StdDraw.mouseX();
-                  //coordsY = StdDraw.mouseY();
+                if (affichageG == 1){
+                  do {
+                  coordsX = StdDraw.mouseX();
+                  coordsY = StdDraw.mouseY();
                   //System.out.println(coordsX + " souris " + coordsY);
-               // } while ("".equals(src) && "".equals(dst) || !StdDraw.isMousePressed());
+                  } while (!StdDraw.isMousePressed());
+                  System.out.println(coordsX + " souris " + coordsY);
+                  closestCoords(coordsTab, coordsX, coordsY);
+                  //src et dst a dégager
+                  src = input.next();
+                  dst = input.next();
+                } else {
+                  src = input.next();
+                  dst = input.next();
+                }
 
                 System.out.println(src + "->" + dst);
 
@@ -460,9 +473,17 @@ public class StuckWin {
 
                 System.out.println("Mouvement " + couleur);
 
-                if (gamemode == 1){
-                  src = input.next();
-                  dst = input.next();
+                if (gamemode == 1){ //Si JoueurvsJoueur
+                  if (affichageG == 1){ //Si Affichage graphique activé
+                    do { //Prendre les coordonnées de la souris
+                    coordsX = StdDraw.mouseX();
+                    coordsY = StdDraw.mouseY();
+                    //System.out.println(coordsX + " souris " + coordsY);
+                    } while (!StdDraw.isMousePressed());
+                  } else {
+                    src = input.next();
+                    dst = input.next();
+                  }
                 } else {
                   mvtIa = jouerIA(couleur);
                   src = mvtIa[0];
@@ -500,9 +521,7 @@ public class StuckWin {
         }
       }
       return couleur;
-
       //throw new java.lang.UnsupportedOperationException("Fonction finPartie");
-
     }
 
     void afficheVainqueur(char couleur) {
@@ -514,17 +533,15 @@ public class StuckWin {
     void createCoordsTab(){
       StdDraw.setXscale(-10, 10);
       StdDraw.setYscale(-10, 10);
-      double coordsTab[][][] = new double[7][8][2];
       for(int it = 0; it < state.length; it++) {
-        double hauteur;
-        double largeur;
-        if (it<4){
-          //largeur = 0-it*1.5;
+        double hauteur = 5-it*0.85;
+        double largeur = 0;
+        if (it < 5) {
           largeur = -4.5;
-          hauteur = (-0.05*it+7.70)-it*1.7;
+          hauteur = 7.53-it*1.7;
         } else {
           largeur = -4.5;
-          hauteur = 7.5-it*1.7;
+          hauteur = 7.565-it*1.71;
         }
         for (int e = 1; e < state.length+1; e++){
           if (state[it][e] != '-') {
@@ -545,6 +562,23 @@ public class StuckWin {
         }
       }
     }
+
+    void closestCoords(double[][][] coordsTab, double x, double y){
+      double radius = 1;
+      for (int it = 0; it < state.length; it++) {
+        for (int e = 1; e < state.length+1; e++){
+          double x2 = coordsTab[it][e][0];
+          double y2 = coordsTab[it][e][1]; 
+          double distance = Math.hypot(x - x2, y - y2);
+          if (distance <= radius) {
+            System.out.println("Dans un rayon" + distance);
+          } else {
+            System.out.println("Pas dans un rayon" + distance);
+          }
+        }
+      }
+    }
+    
     
     int gamemodeSelect(){
       gamemode = -1;
@@ -559,37 +593,57 @@ public class StuckWin {
     int nbPartiesSelect(){
         int nbParties = 0;
         while (nbParties < 1 || nbParties > 1000){
-          System.out.println("Entrez le nombre de parties désirés :");
-          nbParties = input.nextInt();
+          try {
+            System.out.println("Entrez le nombre de parties désirés : ");
+            nbParties = input.nextInt();
+          } catch (InputMismatchException e) {
+            System.out.println("Entrée invalide, réessayez");
+          }
         }
         System.out.println("Nombre de parties : " + nbParties);
         return nbParties;
     }
 
+    void introStuckWin(){
+      int counter = 0;
+      while (counter < 40 && !StdDraw.hasNextKeyTyped()){
+        StdDraw.picture(0.5, 0.5, "STUCKWIN_OPEN.gif", 1.5, 1);
+        counter++;
+      }
+      while (!StdDraw.hasNextKeyTyped()){
+          StdDraw.picture(0.5, 0.5, "STUCKWIN_WAIT.gif", 1.5, 1);
+      }
+      StdDraw.clear();
+      while (counter < 85){
+        StdDraw.picture(0.5, 0.5, "STUCKWIN_CLOSE.gif", 1.5, 1);
+        counter++;
+      }
+      StdDraw.clear();
+    }
 
-    public static void main(String[] args) {
+
+    public static void main(String[] args){
         StuckWin jeuInit = new StuckWin();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
         int nombreDeParties = 1;
-        int counter = 0;
-        StdDraw.setXscale(-10, 10);
-        StdDraw.setYscale(-10, 10);
-        
 
-        StdDraw.setCanvasSize(1080, 1080);
-        while (counter < 250 && !StdDraw.hasNextKeyTyped()){
-          StdDraw.picture(0.5, 0.5, "STUCKWIN_INTRO.gif", 1.5, 1);
-          counter++;
+        while (StuckWin.affichageG != 1 && StuckWin.affichageG !=2){
+          System.out.println("Voulez-vous afficher les graphiques ? (1) oui (2) non");
+          StuckWin.affichageG = input.nextInt();
         }
-        StdDraw.clear();
-        while (!StdDraw.hasNextKeyTyped()){
-            StdDraw.picture(0.5, 0.5, "STUCKWIN_WAITING.gif", 1.5, 1);
-        }
-        StdDraw.clear();
-
-        StdDraw.enableDoubleBuffering();
         
+        if (StuckWin.affichageG == 1){
+          StdDraw.setXscale(-10, 10);
+          StdDraw.setYscale(-10, 10);
+          StdDraw.setCanvasSize(1080, 1080);
+          
+          jeuInit.introStuckWin();
+  
+          StdDraw.enableDoubleBuffering();
+        }
+
+        jeuInit.createCoordsTab();
         int gamemode = jeuInit.gamemodeSelect();
         nombreDeParties = jeuInit.nbPartiesSelect();
 
@@ -623,6 +677,9 @@ public class StuckWin {
 
                 // séquence pour Bleu ou rouge
                 jeu.affiche();
+                if (StuckWin.affichageG == 1){
+                  jeu.affichageGraphique();
+                }
 
                 do {
 
