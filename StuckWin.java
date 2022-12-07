@@ -552,7 +552,7 @@ public class StuckWin {
         StdDraw.enableDoubleBuffering();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
-        int nombreDeParties = 2;
+        int nombreDeParties = 10;
         StdDraw.setCanvasSize(800, 800);
         for (int i = 0; i < nombreDeParties; i++){
 
