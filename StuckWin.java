@@ -454,7 +454,7 @@ public class StuckWin {
                   //System.out.println(coordsX + " souris " + coordsY);
                   } while (!StdDraw.isMousePressed());
                   System.out.println(coordsX + " souris " + coordsY);
-                  closestCoords(coordsTab, coordsX, coordsY);
+                  closestCoords(coordsTab, coordsX, coordsY, couleur);
                   //src et dst a dégager
                   src = input.next();
                   dst = input.next();
@@ -564,19 +564,19 @@ public class StuckWin {
       }
     }
 
-    void closestCoords(double[][][] coordsTab, double x, double y){
+    void closestCoords(double[][][] coordsTab, double x, double y, char couleur){
       double radius = 1;
       for (int it = 0; it < state.length; it++) {
         for (int e = 1; e < state.length+1; e++){
           double x2 = coordsTab[it][e][1];
           double y2 = coordsTab[it][e][0];
-          System.out.println(coordsTab[it][e][1] + " " + coordsTab[it][e][0]);
+          //System.out.println(coordsTab[it][e][1] + " " + coordsTab[it][e][0]);
           double distance = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
           if (distance <= radius) {
             //System.out.println("Dans un rayon " + distance);
             //StdDraw.setPenColor(StdDraw.WHITE);
             //StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
-            dragToken(it,e);
+            dragToken(it,e,couleur);
           } else {
             //System.out.println("Pas dans un rayon " + distance);
             continue;
@@ -590,17 +590,25 @@ public class StuckWin {
       }
     }
     
-    void dragToken(int it, int e){
-      while (StdDraw.isMousePressed()){
-        StdDraw.clear();
-        double mouseX = StdDraw.mouseX();
-        double mouseY = StdDraw.mouseY();
-        affichageGraphique();
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
-        StdDraw.setPenColor(StdDraw.RED);
-        StdDraw.filledCircle(mouseX, mouseY, 0.7);
-        StdDraw.show();
+    void dragToken(int it, int e, char couleur){
+      System.out.println("it, e " + it + " " + e);
+      System.out.println(state[it][e]);
+      if (state[it][e] == couleur) { 
+        while (StdDraw.isMousePressed()){
+          StdDraw.clear();
+          double mouseX = StdDraw.mouseX();
+          double mouseY = StdDraw.mouseY();
+          affichageGraphique();
+          StdDraw.setPenColor(StdDraw.WHITE);
+          StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
+          if (state[it][e] == 'R'){
+            StdDraw.setPenColor(StdDraw.RED);
+          } else {
+            StdDraw.setPenColor(StdDraw.BLUE);
+          }
+          StdDraw.filledCircle(mouseX, mouseY, 0.7);
+          StdDraw.show();
+        }
       }
     }
     
