@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.InputMismatchException;
 
+import javax.swing.text.StyledEditorKit.StyledTextAction;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import com.oracle.webservices.internal.impl.internalspi.encoding.StreamDecoder;
@@ -55,7 +56,6 @@ public class StuckWin {
     };
 
     double coordsTab[][][] = new double[7][8][2];
-
 
     /**
 
@@ -250,7 +250,6 @@ public class StuckWin {
     }
 
     // Affichage console Jeu
-
   }
   void affichageGraphique(){
     StdDraw.setXscale(-SCALE, SCALE);
@@ -299,7 +298,6 @@ public class StuckWin {
         }
       }
     }
-    StdDraw.show();
   }
 
   /**
@@ -536,7 +534,10 @@ public class StuckWin {
       for(int it = 0; it < state.length; it++) {
         double hauteur = 5-it*0.85;
         double largeur = 0;
-        if (it < 5) {
+        if (it < 4) {
+          largeur = -4.5;
+          hauteur = 7.7-it*1.75;
+        } else if (it < 5) {
           largeur = -4.5;
           hauteur = 7.53-it*1.7;
         } else {
@@ -567,18 +568,41 @@ public class StuckWin {
       double radius = 1;
       for (int it = 0; it < state.length; it++) {
         for (int e = 1; e < state.length+1; e++){
-          double x2 = coordsTab[it][e][0];
-          double y2 = coordsTab[it][e][1]; 
-          double distance = Math.hypot(x - x2, y - y2);
+          double x2 = coordsTab[it][e][1];
+          double y2 = coordsTab[it][e][0];
+          System.out.println(coordsTab[it][e][1] + " " + coordsTab[it][e][0]);
+          double distance = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
           if (distance <= radius) {
-            System.out.println("Dans un rayon" + distance);
+            //System.out.println("Dans un rayon " + distance);
+            //StdDraw.setPenColor(StdDraw.WHITE);
+            //StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
+            dragToken(it,e);
           } else {
-            System.out.println("Pas dans un rayon" + distance);
+            //System.out.println("Pas dans un rayon " + distance);
+            continue;
           }
+          //StdDraw.setPenColor(StdDraw.YELLOW);
+          //StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.7);
+          StdDraw.setPenColor(StdDraw.RED);
+          StdDraw.filledCircle(x, y, 0.7);
+          StdDraw.show();
         }
       }
     }
     
+    void dragToken(int it, int e){
+      while (StdDraw.isMousePressed()){
+        StdDraw.clear();
+        double mouseX = StdDraw.mouseX();
+        double mouseY = StdDraw.mouseY();
+        affichageGraphique();
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.filledCircle(mouseX, mouseY, 0.7);
+        StdDraw.show();
+      }
+    }
     
     int gamemodeSelect(){
       gamemode = -1;
@@ -643,7 +667,7 @@ public class StuckWin {
           StdDraw.enableDoubleBuffering();
         }
 
-        jeuInit.createCoordsTab();
+        //StuckWin.createCoordsTab();
         int gamemode = jeuInit.gamemodeSelect();
         nombreDeParties = jeuInit.nbPartiesSelect();
 
@@ -651,7 +675,7 @@ public class StuckWin {
 
           StuckWin jeu = new StuckWin();
 
-          //jeu.createCoordsTab();
+          jeu.createCoordsTab();
 
           String src = "";
 
@@ -679,6 +703,7 @@ public class StuckWin {
                 jeu.affiche();
                 if (StuckWin.affichageG == 1){
                   jeu.affichageGraphique();
+                  StdDraw.show();
                 }
 
                 do {
