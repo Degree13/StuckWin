@@ -6,8 +6,6 @@ import java.util.Random;
 
 import java.util.Scanner;
 import java.util.InputMismatchException;
-import java.io.BufferedWriter;
-import org.apache.commons.csv.CSVFormat;
 
 import javax.swing.text.StyledEditorKit.StyledTextAction;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
@@ -653,23 +651,9 @@ public class StuckWin {
       StdDraw.clear();
     }
 
-    void createCSVfile(){
-      CSVFormat csvFormat = CSVFormat.DEFAULT
-            .withHeader("Column1", "Column2", "Column3")
-            .withDelimiter(',');
-
-    // Set additional formatting options for the CSV file
-    csvFormat = csvFormat
-            .withQuote('"')
-            .withEscape('\\');
-
-    // Save the CSVFormat object to a variable
-    CSVFormat csvFormat = csvFormat;
-    }
-
-
     public static void main(String[] args){
         StuckWin jeuInit = new StuckWin();
+        CreateAndWriteCSV CSV = new CreateAndWriteCSV();
         int victoiresBleu = 0;
         int victoiresRouge = 0;
         int nombreDeParties = 1;
@@ -778,5 +762,6 @@ public class StuckWin {
       }
       StdDraw.show();
       System.out.println("Victoires Bleu :" + victoiresBleu + " Victoires Rouge :" + victoiresRouge);
+      //System.out.println("Nombre de déplacements gauche des vainqueurs vs des perdants");
     }
 }
