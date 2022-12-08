@@ -6,6 +6,8 @@ import java.util.Random;
 
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.io.BufferedWriter;
+import org.apache.commons.csv.CSVFormat;
 
 import javax.swing.text.StyledEditorKit.StyledTextAction;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
@@ -264,11 +266,15 @@ public class StuckWin {
         largeur = 0-it*1.5;
       } else if (it < 5) {
         largeur = -4.5;
-        hauteur = 7.53-it*1.7;
+        hauteur = 7.52-it*1.7;
         letter += (it-3);
-      } else {
+      } else if (it < 6){
         largeur = -4.5;
-        hauteur = 7.565-it*1.71;
+        hauteur = 7.52-it*1.709;
+        letter += (it-3);
+      } else if (it < 7){
+        largeur = -4.5;
+        hauteur = 7.505-it*1.71;
         letter += (it-3);
       }
       for (int e = 1; e < state.length+1; e++){
@@ -454,7 +460,7 @@ public class StuckWin {
                   //System.out.println(coordsX + " souris " + coordsY);
                   } while (!StdDraw.isMousePressed());
                   System.out.println(coordsX + " souris " + coordsY);
-                  closestCoords(coordsTab, coordsX, coordsY, couleur);
+                  //closestCoords(coordsTab, coordsX, coordsY, couleur);
                   //src et dst a dégager
                   src = input.next();
                   dst = input.next();
@@ -532,18 +538,11 @@ public class StuckWin {
       StdDraw.setXscale(-10, 10);
       StdDraw.setYscale(-10, 10);
       for(int it = 0; it < state.length; it++) {
-        double hauteur = 5-it*0.85;
-        double largeur = 0;
-        if (it < 4) {
-          largeur = -4.5;
-          hauteur = 7.7-it*1.75;
-        } else if (it < 5) {
-          largeur = -4.5;
-          hauteur = 7.53-it*1.7;
-        } else {
-          largeur = -4.5;
-          hauteur = 7.565-it*1.71;
-        }
+        double largeur = -4.5;
+        double hauteur = (it < 4) ? 7.7 - it * 1.75 :
+                         (it < 5) ? 7.53 - it * 1.7 :
+                                    7.565 - it * 1.71;
+        //double hauteur = 7.7 - (it * 1.75) + ((it - 4) * 0.15);
         for (int e = 1; e < state.length+1; e++){
           if (state[it][e] != '-') {
             coordsTab[it][e][0] = hauteur;
@@ -555,7 +554,7 @@ public class StuckWin {
             coordsTab[it][e][0] = SCALE+1;
             coordsTab[it][e][1] = SCALE+1;
           }
-          System.out.println(coordsTab[it][e][0] + " " + coordsTab[it][e][1]);
+          //System.out.println(coordsTab[it][e][0] + " " + coordsTab[it][e][1]);
           StdDraw.show();
           hauteur -= 0.9;
           largeur += 1.5;
@@ -577,14 +576,15 @@ public class StuckWin {
             //StdDraw.setPenColor(StdDraw.WHITE);
             //StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
             dragToken(it,e,couleur);
-          } else {
+            break;
+          }// else {
             //System.out.println("Pas dans un rayon " + distance);
-            continue;
-          }
+            //continue;
+          //}
           //StdDraw.setPenColor(StdDraw.YELLOW);
           //StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.7);
-          StdDraw.setPenColor(StdDraw.RED);
-          StdDraw.filledCircle(x, y, 0.7);
+          //StdDraw.setPenColor(StdDraw.RED);
+          //StdDraw.filledCircle(x, y, 0.7);
           StdDraw.show();
         }
       }
@@ -651,6 +651,20 @@ public class StuckWin {
         counter++;
       }
       StdDraw.clear();
+    }
+
+    void createCSVfile(){
+      CSVFormat csvFormat = CSVFormat.DEFAULT
+            .withHeader("Column1", "Column2", "Column3")
+            .withDelimiter(',');
+
+    // Set additional formatting options for the CSV file
+    csvFormat = csvFormat
+            .withQuote('"')
+            .withEscape('\\');
+
+    // Save the CSVFormat object to a variable
+    CSVFormat csvFormat = csvFormat;
     }
 
 
