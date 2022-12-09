@@ -60,7 +60,8 @@ public class StuckWin {
       { '-', 'B', 'B', 'B', 'B', '-', '-', '-' },
 
   };
-  ArrayList<String> stateData = new ArrayList<>(10);
+  //ArrayList<String> stateData = new ArrayList<>(10);
+  Hashmap<String, Char> stateData = new Hashmap<>();
   double coordsTab[][][] = new double[7][8][2];
 
   /**
@@ -665,7 +666,7 @@ public class StuckWin {
     StdDraw.clear();
   }
 
-  void storeData(){
+  void storeData(char curPlayer){
     String result = "";
     for (int i = 0; i < state.length; i++) {
       for (int j = 0; j < state[i].length; j++) {
@@ -694,6 +695,7 @@ public class StuckWin {
       for (String element : stateData) {
         bw.newLine();
         bw.write(element + "," + winner);
+        //stateData.addAll(Arrays.asList(new String[10][1]));
       }
       stateData.clear();
       bw.close();
