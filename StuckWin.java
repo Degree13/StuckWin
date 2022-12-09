@@ -66,23 +66,6 @@ public class StuckWin {
   //HashMap<String, Character> stateData = new HashMap<>();
   double coordsTab[][][] = new double[7][8][2];
 
-  /**
-   * 
-   * Déplace un pion ou simule son déplacement
-   * 
-   * @param couleur  couleur du pion à déplacer
-   * 
-   * @param lcSource case source Lc
-   * 
-   * @param lcDest   case destination Lc
-   * 
-   * @param mode     ModeMVT.REAL/SIMU selon qu'on réalise effectivement le
-   *                 déplacement ou qu'on le simule seulement.
-   * 
-   * @return enum {OK, BAD_COLOR, DEST_NOT_FREE, EMPTY_SRC, TOO_FAR, EXT_BOARD,
-   *         EXIT} selon le déplacement
-   * 
-   */
 
     int [][][] state3 = {
       {{-1,-1}, {-1,-1}, {-1,-1}, {0,4,0,7}, {-1,-1}, {-1,-1}, {-1,-1}},
@@ -256,24 +239,24 @@ public class StuckWin {
     return possibilites;
   }
 
-
-     /** Affiche le plateau de jeu dans la configuration portée par
-
-     * l'attribut d'état "state"
-
-     */
-
-    void affiche() {
+  /**
+   * 
+   * Affiche le plateau de jeu dans la configuration portée par
+   * 
+   * l'attribut d'état "state"
+   *
+   */
+  void affiche() {
       //TESTS A DEGAGER
       //possibleDests('R', 0, 7);
       //System.out.println(deplace('B', "E3", "D4", ModeMvt.REAL));
 
-      // Affichage console Dev
+    // Affichage console Dev
       for(int i = 0; i < state3.length; i++) {
         for(int it = 0; it < state3[i].length; it++){
           if (state3[i][it][0] == -1){
             System.out.print("  "+ConsoleColors.RESET);
-          }
+      }
           else if ((state3[i][it][0] != -1) && (state[state3[i][it][0]][state3[i][it][1]]=='B')){
             System.out.print(ConsoleColors.BLUE_BACKGROUND+afficheLettre(state3[i][it][2])+state3[i][it][3]+ConsoleColors.RESET);
           }
@@ -282,9 +265,38 @@ public class StuckWin {
           }
           else if ((state3[i][it][0] != -1) && (state[state3[i][it][0]][state3[i][it][1]]=='.')){
             System.out.print(ConsoleColors.WHITE_BACKGROUND+afficheLettre(state3[i][it][2])+state3[i][it][3]+ConsoleColors.RESET);
-          }
         }
-        System.out.println("");
+      }
+      System.out.println("");
+      }
+    }
+
+    void afficheDev() {
+    // TESTS A DEGAGER
+    // possibleDests('R', 0, 7);
+    // System.out.println(deplace('B', "E3", "D4", ModeMvt.REAL));
+
+    // Affichage console Dev
+    for (int it = 0; it < state.length; it++) {
+      int letter = 65;
+      if (it > 3) {
+        letter += (it - 3);
+      }
+      for (int e = 1; e < state.length + 1; e++) {
+        if (state[it][e] == 'B') {
+          System.out.print(ConsoleColors.BLUE + (char) letter + (7 - it) + " ");
+          letter += 1;
+        } else if (state[it][e] == 'R') {
+          System.out.print(ConsoleColors.RED + (char) letter + (7 - it) + " ");
+          letter += 1;
+        } else if (state[it][e] == '.') {
+          System.out.print(ConsoleColors.RESET + (char) letter + (7 - it) + " ");
+          letter += 1;
+        } else {
+          System.out.print(" " + ConsoleColors.RESET + state[it][e] + " ");
+        }
+      }
+      System.out.println("");
       }
     }
 
@@ -309,7 +321,7 @@ public class StuckWin {
         default:
           return 'X';
       }
-    }
+  }
       
 
   void affichageGraphique() {
