@@ -6,7 +6,6 @@ import java.util.Random;
 
 import java.util.Scanner;
 import java.util.InputMismatchException;
-
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import com.oracle.webservices.internal.impl.internalspi.encoding.StreamDecoder;
@@ -53,6 +52,22 @@ public class StuckWin {
             {'-', 'B', 'B', 'B', 'B', '-', '-', '-'},
 
     };
+
+    int [][][] state3 = {
+      {{-1,-1}, {-1,-1}, {-1,-1}, {0,4,0,7}, {-1,-1}, {-1,-1}, {-1,-1}},
+      {{-1,-1}, {-1,-1}, {1,3,0,6}, {-1,-1}, {0,5,1,7}, {-1,-1}, {-1,-1}},
+      {{-1,-1}, {2,2,0,5}, {-1,-1}, {1,4,1,6}, {-1,-1}, {0,6,2,7}, {-1,-1}},
+      {{3,1,0,4}, {-1,-1}, {2,3,1,5}, {-1,-1}, {1,5,2,6}, {-1,-1}, {0,7,3,7}},
+      {{-1,-1}, {3,2,1,4}, {-1,-1}, {2,4,2,5}, {-1,-1}, {1,6,3,6}, {-1,-1}},
+      {{4,1,1,3}, {-1,-1}, {3,3,2,4}, {-1,-1}, {2,5,3,5}, {-1,-1}, {1,7,4,6}},
+      {{-1,-1}, {4,2,2,3}, {-1,-1}, {3,4,3,4}, {-1,-1}, {2,6,4,5}, {-1,-1}},
+      {{5,1,2,2}, {-1,-1}, {4,3,3,3}, {-1,-1}, {3,5,4,4}, {-1,-1}, {2,7,5,5}},
+      {{-1,-1}, {5,2,3,2}, {-1,-1}, {4,4,4,3}, {-1,-1}, {3,6,5,4}, {-1,-1}},
+      {{6,1,3,1}, {-1,-1}, {5,3,4,2}, {-1,-1}, {4,5,5,3}, {-1,-1}, {3,7,6,4}},
+      {{-1,-1}, {6,2,4,1}, {-1,-1}, {5,4,5,2}, {-1,-1}, {4,6,6,3}, {-1,-1}},
+      {{-1,-1}, {-1,-1}, {6,3,5,1}, {-1,-1}, {5,5,6,2}, {-1,-1}, {-1,-1}},
+      {{-1,-1}, {-1,-1}, {-1,-1}, {6,4,6,1}, {-1,-1}, {-1,-1}, {-1,-1}}
+    };  
 
     double coordsTab[][][] = new double[7][8][2];
 
@@ -227,31 +242,48 @@ public class StuckWin {
       //System.out.println(deplace('B', "E3", "D4", ModeMvt.REAL));
 
       // Affichage console Dev
-      for(int it = 0; it < state.length; it++) {
-        int letter = 65;
-        if (it>3){
-          letter += (it-3);
-        }
-        for (int e = 1; e < state.length+1; e++){
-          if (state[it][e] == 'B') {
-            System.out.print(ConsoleColors.BLUE + (char)letter + (7-it) +" ");
-            letter += 1;
-          } else if (state[it][e] == 'R') {
-            System.out.print(ConsoleColors.RED + (char)letter + (7-it) +" ");
-            letter += 1;
-          } else if (state[it][e] == '.') {
-              System.out.print(ConsoleColors.RESET  + (char)letter + (7-it)+" ");
-              letter += 1;
-            } else {
-              System.out.print(" " + ConsoleColors.RESET + state[it][e] + " ");
-            }
+      for(int i = 0; i < state3.length; i++) {
+        for(int it = 0; it < state3[i].length; it++){
+          if (state3[i][it][0] == -1){
+            System.out.print("  "+ConsoleColors.RESET);
+          }
+          else if ((state3[i][it][0] != -1) && (state[state3[i][it][0]][state3[i][it][1]]=='B')){
+            System.out.print(ConsoleColors.BLUE_BACKGROUND+afficheLettre(state3[i][it][2])+state3[i][it][3]+ConsoleColors.RESET);
+          }
+          else if ((state3[i][it][0] != -1) && (state[state3[i][it][0]][state3[i][it][1]]=='R')){
+            System.out.print(ConsoleColors.RED_BACKGROUND+afficheLettre(state3[i][it][2])+state3[i][it][3]+ConsoleColors.RESET);
+          }
+          else if ((state3[i][it][0] != -1) && (state[state3[i][it][0]][state3[i][it][1]]=='.')){
+            System.out.print(ConsoleColors.WHITE_BACKGROUND+afficheLettre(state3[i][it][2])+state3[i][it][3]+ConsoleColors.RESET);
+          }
         }
         System.out.println("");
+      }
     }
 
-    // Affichage console Jeu
 
-  }
+
+    public static char afficheLettre(int ind) {
+      switch(ind){
+        case 0 :
+          return 'A';
+        case 1 :
+          return 'B';
+        case 2 :
+          return 'C';
+        case 3 :
+          return 'D';
+        case 4 :
+          return 'E';
+        case 5 :
+          return 'F';
+        case 6 :
+          return 'G';
+        default:
+          return 'X';
+      }
+    }
+
   void affichageGraphique(){
     StdDraw.setXscale(-SCALE, SCALE);
     StdDraw.setYscale(-SCALE, SCALE);
