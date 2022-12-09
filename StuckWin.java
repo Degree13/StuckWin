@@ -9,6 +9,7 @@ import java.util.InputMismatchException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
+import java.util.HashMap;
 
 import javax.swing.text.StyledEditorKit.StyledTextAction;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
@@ -60,8 +61,9 @@ public class StuckWin {
       { '-', 'B', 'B', 'B', 'B', '-', '-', '-' },
 
   };
-  //ArrayList<String> stateData = new ArrayList<>(10);
-  Hashmap<String, Char> stateData = new Hashmap<>();
+  ArrayList<String> stateData = new ArrayList<>(10);
+  ArrayList<Character> stateDataColor = new ArrayList<>(10);
+  //HashMap<String, Character> stateData = new HashMap<>();
   double coordsTab[][][] = new double[7][8][2];
 
   /**
@@ -432,7 +434,7 @@ public class StuckWin {
       throw new java.lang.UnsupportedOperationException(message);
     }
     if (COLLECTING_DATA) {
-      storeData();
+      storeData(couleur);
     }
     return tabIa;
     // throw new java.lang.UnsupportedOperationException("à compléter");
@@ -512,7 +514,7 @@ public class StuckWin {
         break;
     }
     if (COLLECTING_DATA) {
-      storeData();
+      storeData(couleur);
     }
     return new String[] { src, dst };
   }
@@ -560,8 +562,8 @@ public class StuckWin {
         if (state[it][e] != '-') {
           coordsTab[it][e][0] = hauteur;
           coordsTab[it][e][1] = largeur;
-          //StdDraw.setPenColor(StdDraw.GREEN);
-          //StdDraw.filledCircle(largeur, hauteur, 0.7);
+          // StdDraw.setPenColor(StdDraw.GREEN);
+          // StdDraw.filledCircle(largeur, hauteur, 0.7);
         } else {
           // Set coordsTab to an impossible number to make tests later on
           coordsTab[it][e][0] = SCALE + 1;
@@ -666,41 +668,88 @@ public class StuckWin {
     StdDraw.clear();
   }
 
-  void storeData(char curPlayer){
+  void storeData(char curPlayer) {
+    String result = createStringFromTab(state);
+    stateData.add(result);
+    stateDataColor.add(curPlayer);
+  }
+
+  String createStringFromTab(char tab[][]) {
     String result = "";
     for (int i = 0; i < state.length; i++) {
       for (int j = 0; j < state[i].length; j++) {
         result += state[i][j];
       }
     }
-    stateData.add(result);
+    return result;
   }
 
   void createAndWriteCSV(char winner) {
     try {
 
-      // Create a File object for the CSV file
       File csvFile = new File("data.csv");
 
-      // Create a PrintWriter to write the CSV file
       FileWriter fw = new FileWriter(csvFile, true);
-
-      // Create a BufferedWriter to buffer the data before writing it to the file
       BufferedWriter bw = new BufferedWriter(fw);
 
       // If the file does not exist, create it and write the header row
       if (!csvFile.exists()) {
-        bw.write("Board,Winner");
+        bw.write("Board,LastPlayerWas,Winner");
       }
+      //stateData.putAll(StateData);
+      int i = 0;
       for (String element : stateData) {
         bw.newLine();
-        bw.write(element + "," + winner);
-        //stateData.addAll(Arrays.asList(new String[10][1]));
+        bw.write(element + "," + stateDataColor.get(i) + "," + winner);
+        i++;
       }
       stateData.clear();
+      stateDataColor.clear();
       bw.close();
     } catch (Exception e) {
       e.printStackTrace();
+    }
+  }
+
+  void dataPossibilities(char color){
+    char[][] virtualState = state;
+    for (int i = 0; i < state.length; i++) {
+      for (int j = 0; j < state[i].length; j++) {
+        String[] mouv = possibleDests(color, i, j);
+
+        switch (color){
+          case 'B':
+            if (!mouv[0].equals("XXX")) {
+              //deplace un pion sur le plateau virtuel
+              virtualState[i][j] = '.'; 
+              virtualState[i][j-1] = 'B';
+            }
+            if (!mouv[1].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i+1][j-1] = 'B';
+            }
+            if (!mouv[2].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i+1][j] = 'B';
+            }
+            break;
+
+          case 'R':
+            if (!mouv[0].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i-1][j] = 'R';
+            }
+            if (!mouv[1].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i-1][j+1] = 'R';
+            }
+            if (!mouv[2].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i][j+1] = 'R';
+            }
+            break;
+        }
+      }
     }
   }
 
