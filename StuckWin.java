@@ -8,6 +8,7 @@ import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ref.Cleaner.Cleanable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -44,8 +45,8 @@ public class StuckWin {
 
   final char VIDE = '.';
 
-  int gamemode = 0;
-  public static boolean COLLECTING_DATA = true;
+  public static int gamemode = 0;
+  public static boolean COLLECTING_DATA = false;
   public static int affichageG = -1;
 
   // 'B'=bleu 'R'=rouge '.'=vide '-'=n'existe pas
@@ -542,10 +543,10 @@ public class StuckWin {
             // System.out.println(coordsX + " souris " + coordsY);
           } while (!StdDraw.isMousePressed());
           System.out.println(coordsX + " souris " + coordsY);
-          // closestCoords(coordsTab, coordsX, coordsY, couleur);
-          // src et dst a dégager
-          src = input.next();
-          dst = input.next();
+          String[] mouseInput = new String[2];
+          mouseInput = closestCoords(coordsTab, coordsX, coordsY, couleur);
+          src = mouseInput[0];
+          dst = mouseInput[1];
         } else {
           src = input.next();
           dst = input.next();
@@ -556,9 +557,7 @@ public class StuckWin {
         break;
 
       case 'R':
-
         System.out.println("Mouvement " + couleur);
-
         if (gamemode == 1) { // Si JoueurvsJoueur
           if (affichageG == 1) { // Si Affichage graphique activé
             do { // Prendre les coordonnées de la souris
@@ -566,6 +565,11 @@ public class StuckWin {
               coordsY = StdDraw.mouseY();
               // System.out.println(coordsX + " souris " + coordsY);
             } while (!StdDraw.isMousePressed());
+            System.out.println(coordsX + " souris " + coordsY);
+            String[] mouseInput = new String[2];
+            mouseInput = closestCoords(coordsTab, coordsX, coordsY, couleur);
+            src = mouseInput[0];
+            dst = mouseInput[1];
           } else {
             src = input.next();
             dst = input.next();
@@ -612,12 +616,6 @@ public class StuckWin {
     // throw new java.lang.UnsupportedOperationException("Fonction finPartie");
   }
 
-  void afficheVainqueur(char couleur) {
-    StdDraw.setXscale(-10, 10);
-    StdDraw.setYscale(-10, 10);
-    StdDraw.filledRectangle(-5, 5, 1, 1);
-  }
-
   void createCoordsTab() {
     StdDraw.setXscale(-10, 10);
     StdDraw.setYscale(-10, 10);
@@ -645,10 +643,17 @@ public class StuckWin {
     }
   }
 
-  void closestCoords(double[][][] coordsTab, double x, double y, char couleur) {
+  String[] closestCoords(double[][][] coordsTab, double x, double y, char couleur) {
     double radius = 1;
-    for (int it = 0; it < state.length; it++) {
-      for (int e = 1; e < state.length + 1; e++) {
+    String source = "";
+    String dest = "";
+    String[] returned = new String[2]; 
+    for (int it = 0; it < coordsTab.length; it++) {
+      int letter = 65;
+      if (it > 3) {
+        letter += (it-3);
+      }
+      for (int e = 1; e < coordsTab.length; e++) {
         double x2 = coordsTab[it][e][1];
         double y2 = coordsTab[it][e][0];
         // System.out.println(coordsTab[it][e][1] + " " + coordsTab[it][e][0]);
@@ -657,7 +662,11 @@ public class StuckWin {
           // System.out.println("Dans un rayon " + distance);
           // StdDraw.setPenColor(StdDraw.WHITE);
           // StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
-          dragToken(it, e, couleur);
+          System.out.println("1 Here, I found the token to be " + letter + " " + e);
+          System.out.println("Representing " + (char)letter + " " + (7-it));
+          source = (char)letter + "" + (7-it);
+          dest = dragToken(it, e, couleur, radius);
+          System.out.println("DragToken executed");
           break;
         } // else {
           // System.out.println("Pas dans un rayon " + distance);
@@ -667,31 +676,58 @@ public class StuckWin {
           // StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.7);
           // StdDraw.setPenColor(StdDraw.RED);
           // StdDraw.filledCircle(x, y, 0.7);
+        letter++;
         StdDraw.show();
       }
     }
+    returned[0] = source;
+    returned[1] = dest;
+    return returned;
   }
 
-  void dragToken(int it, int e, char couleur) {
-    System.out.println("it, e " + it + " " + e);
-    System.out.println(state[it][e]);
-    if (state[it][e] == couleur) {
-      while (StdDraw.isMousePressed()) {
-        StdDraw.clear();
-        double mouseX = StdDraw.mouseX();
-        double mouseY = StdDraw.mouseY();
-        affichageGraphique();
-        StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
-        if (state[it][e] == 'R') {
-          StdDraw.setPenColor(StdDraw.RED);
-        } else {
-          StdDraw.setPenColor(StdDraw.BLUE);
+  String dragToken(int it, int e, char couleur, double radius) {
+    //System.out.println("it, e " + it + " " + e);
+    //System.out.println(state[it][e]);
+    double mouseX = StdDraw.mouseX();
+    double mouseY = StdDraw.mouseY();
+    String returned = "";
+
+    if (state[it][e] != couleur) {
+      System.out.println("Warning : Wrong color");
+    }
+    while (StdDraw.isMousePressed()) {
+      StdDraw.clear();
+      mouseX = StdDraw.mouseX();
+      mouseY = StdDraw.mouseY();
+      affichageGraphique();
+      StdDraw.setPenColor(StdDraw.WHITE);
+      StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
+      if (state[it][e] == 'R') {
+        StdDraw.setPenColor(StdDraw.RED);
+      } else {
+        StdDraw.setPenColor(StdDraw.BLUE);
+      }
+      StdDraw.filledCircle(mouseX, mouseY, 0.7);
+      StdDraw.show();
+    }
+
+    for (int it2 = 0; it2 < coordsTab.length; it2++) {
+      int letter = 65+it2-3;
+      for (int e2 = 1; e2 < coordsTab.length+1; e2++) {
+        double x2 = coordsTab[it2][e2][1];
+        double y2 = coordsTab[it2][e2][0];
+        double distance = Math.sqrt(Math.pow(x2 - mouseX, 2) + Math.pow(y2 - mouseY, 2));
+        if (distance <= radius) {
+          System.out.println("I found the token to be " + it2 + " " + e2);
+          System.out.println("Representing " + (char)letter + " " + (7-it2));
+          returned = (char)letter + "" + (7-it2);
+          break;
         }
-        StdDraw.filledCircle(mouseX, mouseY, 0.7);
+        letter++;
         StdDraw.show();
       }
     }
+    return returned;
   }
 
   int gamemodeSelect() {
@@ -924,7 +960,7 @@ public class StuckWin {
       do {
 
         // séquence pour Bleu ou rouge
-        jeu.affiche();
+        jeu.afficheDev();
         if (StuckWin.affichageG == 1) {
           jeu.affichageGraphique();
           StdDraw.show();
@@ -951,6 +987,12 @@ public class StuckWin {
             return;
 
           status = jeu.deplace(curCouleur, src, dest, ModeMvt.REAL);
+
+          if (status != Result.OK && affichageG == 1) {
+            StdDraw.clear();
+            jeu.affichageGraphique();
+            StdDraw.show();
+          }
 
           partie = jeu.finPartie(nextCouleur);
 
