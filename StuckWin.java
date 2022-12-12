@@ -6,10 +6,16 @@ import java.util.Random;
 
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.util.HashMap;
+import java.util.Map;
+import java.io.BufferedReader;
+import java.io.FileReader;
+
 
 import javax.swing.text.StyledEditorKit.StyledTextAction;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
@@ -63,6 +69,7 @@ public class StuckWin {
   };
   ArrayList<String> stateData = new ArrayList<>(10);
   ArrayList<Character> stateDataColor = new ArrayList<>(10);
+  ArrayList<String> virtualStates = new ArrayList<>();
   //HashMap<String, Character> stateData = new HashMap<>();
   double coordsTab[][][] = new double[7][8][2];
 
@@ -484,7 +491,7 @@ public class StuckWin {
           isValid = false;
           break;
         default:
-          String message = "Fonction JourIA : pas de couleur valide";
+          String message = "Fonction JouerIA : pas de couleur valide";
           throw new java.lang.UnsupportedOperationException(message);
       }
     } while (isValid == false);
@@ -754,13 +761,14 @@ public class StuckWin {
 
       // If the file does not exist, create it and write the header row
       if (!csvFile.exists()) {
-        bw.write("Board,LastPlayerWas,Winner");
+        bw.write("Board,NextWhoPlays,Winner");
+        bw.newLine();
       }
       //stateData.putAll(StateData);
       int i = 0;
       for (String element : stateData) {
-        bw.newLine();
         bw.write(element + "," + stateDataColor.get(i) + "," + winner);
+        bw.newLine();
         i++;
       }
       stateData.clear();
@@ -773,6 +781,7 @@ public class StuckWin {
 
   void dataPossibilities(char color){
     char[][] virtualState = state;
+    String resultat = "";
     for (int i = 0; i < state.length; i++) {
       for (int j = 0; j < state[i].length; j++) {
         String[] mouv = possibleDests(color, i, j);
@@ -783,14 +792,23 @@ public class StuckWin {
               //deplace un pion sur le plateau virtuel
               virtualState[i][j] = '.'; 
               virtualState[i][j-1] = 'B';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
             }
             if (!mouv[1].equals("XXX")) {
               virtualState[i][j] = '.'; 
               virtualState[i+1][j-1] = 'B';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
             }
             if (!mouv[2].equals("XXX")) {
               virtualState[i][j] = '.'; 
               virtualState[i+1][j] = 'B';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
             }
             break;
 
@@ -798,14 +816,23 @@ public class StuckWin {
             if (!mouv[0].equals("XXX")) {
               virtualState[i][j] = '.'; 
               virtualState[i-1][j] = 'R';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
             }
             if (!mouv[1].equals("XXX")) {
               virtualState[i][j] = '.'; 
               virtualState[i-1][j+1] = 'R';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
             }
             if (!mouv[2].equals("XXX")) {
               virtualState[i][j] = '.'; 
               virtualState[i][j+1] = 'R';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
             }
             break;
         }
@@ -813,8 +840,38 @@ public class StuckWin {
     }
   }
 
+  void jouerStupidTurtle(char color){
+    dataPossibilities(color);
+    for (String element : virtualStates) {
+      continue;
+    }
+  }
+
+  void createHashmap(char color){
+    Map<String, Integer> stringCounts = new HashMap<>();
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader("hashmap.csv"));
+    
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] values = line.split(",");
+        // Do something with the values
+      }
+    
+      reader.close();
+    } catch (FileNotFoundException e) {
+      // Handle the FileNotFoundException here
+      System.err.println("Could not find file: " + e.getMessage());
+    } catch (IOException e) {
+      // Handle the IOException here
+      System.err.println("Error reading file: " + e.getMessage());
+    }
+    
+  }
+
   public static void main(String[] args) {
     StuckWin jeuInit = new StuckWin();
+    jeuInit.createHashmap('R');
     int victoiresBleu = 0;
     int victoiresRouge = 0;
     int nombreDeParties = 1;
