@@ -653,7 +653,7 @@ public class StuckWin {
       if (it > 3) {
         letter += (it-3);
       }
-      for (int e = 1; e < coordsTab.length; e++) {
+      for (int e = 1; e <= coordsTab.length; e++) {
         double x2 = coordsTab[it][e][1];
         double y2 = coordsTab[it][e][0];
         // System.out.println(coordsTab[it][e][1] + " " + coordsTab[it][e][0]);
