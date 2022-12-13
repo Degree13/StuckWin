@@ -650,9 +650,7 @@ public class StuckWin {
     String[] returned = new String[2]; 
     for (int it = 0; it < coordsTab.length; it++) {
       int letter = 65;
-      if (it > 3) {
-        letter += (it-3);
-      }
+      letter += (it-3);
       for (int e = 1; e <= coordsTab.length; e++) {
         double x2 = coordsTab[it][e][1];
         double y2 = coordsTab[it][e][0];
@@ -662,11 +660,13 @@ public class StuckWin {
           // System.out.println("Dans un rayon " + distance);
           // StdDraw.setPenColor(StdDraw.WHITE);
           // StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
-          System.out.println("1 Here, I found the token to be " + letter + " " + e);
-          System.out.println("Representing " + (char)letter + " " + (7-it));
-          source = (char)letter + "" + (7-it);
-          dest = dragToken(it, e, couleur, radius);
-          System.out.println("DragToken executed");
+          //System.out.println("1 Here, I found the token to be " + letter + " " + e);
+          //System.out.println("Representing " + (char)letter + " " + (7-it));
+          if (state[it][e] == 'R' || state[it][e] == 'B'){
+            source = (char)letter + "" + (7-it);
+            dest = dragToken(it, e, couleur, radius);
+          }
+          //System.out.println("DragToken executed");
           break;
         } // else {
           // System.out.println("Pas dans un rayon " + distance);
