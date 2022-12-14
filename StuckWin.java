@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import java.util.Scanner;
+import java.util.logging.Logger;
 import java.util.InputMismatchException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,10 +15,13 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PrimitiveIterator;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
-
+import javax.print.FlavorException;
+import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
 import javax.swing.text.StyledEditorKit.StyledTextAction;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
@@ -49,6 +53,8 @@ public class StuckWin {
   public static boolean COLLECTING_DATA = false;
   public static int affichageG = -1;
 
+  private static final Logger LOGGER = Logger.getLogger(StuckWin.class.getName());
+
   // 'B'=bleu 'R'=rouge '.'=vide '-'=n'existe pas
 
   char[][] state = {
@@ -72,7 +78,7 @@ public class StuckWin {
   ArrayList<Character> stateDataColor = new ArrayList<>(10);
   ArrayList<String> virtualStates = new ArrayList<>();
   //HashMap<String, Character> stateData = new HashMap<>();
-  double coordsTab[][][] = new double[7][8][2];
+  double[][][] coordsTab = new double[7][8][2];
 
 
     int [][][] state3 = {
@@ -91,6 +97,14 @@ public class StuckWin {
       {{-1,-1}, {-1,-1}, {-1,-1}, {6,4,6,1}, {-1,-1}, {-1,-1}, {-1,-1}}
     };
 
+    public void printMessage(String message, boolean ligne) {
+      if (ligne) {
+          System.out.println(message);
+      } else {
+          System.out.print(message);
+      }
+      //LOGGER.info(message);
+    }
 
     /**
 
@@ -135,25 +149,22 @@ public class StuckWin {
     if (state[idLineDest][idColDest] != '.') {
       return Result.DEST_NOT_FREE;
     }
-    String isTooFar = Arrays.toString(possibleDests(couleur, idLineSource, idColSource));
-    // System.out.println(isTooFar);
+    String[] holdString = possibleDests(couleur, idLineSource, idColSource);
+    String isTooFar = Arrays.toString(holdString);
     boolean boolTooFar = true;
     switch (couleur) {
       case 'B':
         if (isTooFar.charAt(1) == 'L' 
         && idColDest + 1 == idColSource 
         && idLineDest == idLineSource) {
-          // System.out.println("Checkpoint1 B");
           boolTooFar = false;
         } else if (isTooFar.charAt(6) == 'T' 
         && idLineDest + 1 == idLineSource 
         && idColDest == idColSource) {
-          // System.out.println("Checkpoint2 B");
           boolTooFar = false;
         } else if (isTooFar.charAt(11) == 'R' 
         && idLineDest + 1 == idLineSource 
         && idColDest - 1 == idColSource) {
-          // System.out.println("Checkpoint3 B");
           boolTooFar = false;
         }
         if (boolTooFar == true) {
@@ -164,20 +175,17 @@ public class StuckWin {
         if (isTooFar.charAt(1) == 'L' 
         && (idColDest + 1 == idColSource 
         && idLineDest - 1 == idLineSource)) {
-          // System.out.println("Checkpoint1 R");
           boolTooFar = false;
         } else if (isTooFar.charAt(6) == 'D' 
         && idLineDest - 1 == idLineSource 
         && idColDest == idColSource) {
-          // System.out.println("Checkpoint2 R");
           boolTooFar = false;
         } else if (isTooFar.charAt(11) == 'R' 
         && idLineDest == idLineSource 
         && idColDest - 1 == idColSource) {
-          // System.out.println("Checkpoint3 R");
           boolTooFar = false;
         }
-        if (boolTooFar == true) {
+        if (boolTooFar) {
           return Result.TOO_FAR;
         }
         break;
@@ -254,10 +262,12 @@ public class StuckWin {
           }
         }
         break;
-    }
 
-    // System.out.println(state[idLettre][idCol] + " " + possibilites[0] +
-    // possibilites[1] + possibilites[2]);
+        default:
+        String message = "Fonction PossibleDests : pas de couleur valide";
+        throw new java.lang.UnsupportedOperationException(message);
+          
+    }
     return possibilites;
   }
 
@@ -269,42 +279,48 @@ public class StuckWin {
    *
    */
   void affiche() {
-      //TESTS A DEGAGER
-      //possibleDests('R', 0, 7);
-      //System.out.println(deplace('B', "E3", "D4", ModeMvt.REAL));
-
-    // Affichage console Dev
+    // Affichage console
+    String toPrint = "";
       for(int i = 0; i < state3.length; i++) {
         for(int it = 0; it < state3[i].length; it++){
           if (state3[i][it][0] == -1){
-            System.out.print("  "+ConsoleColors.RESET);
+            toPrint = "  "+ConsoleColors.RESET;
+            printMessage(toPrint, false);
       }
           else if ((state3[i][it][0] != -1) 
           && (state[state3[i][it][0]][state3[i][it][1]]=='B')){
-            System.out.print(ConsoleColors.BLUE_BACKGROUND+afficheLettre(state3[i][it][2])
+            toPrint = (ConsoleColors.BLUE_BACKGROUND+afficheLettre(state3[i][it][2])
             +state3[i][it][3]+ConsoleColors.RESET);
+            printMessage(toPrint, false);
           }
           else if ((state3[i][it][0] != -1) 
           && (state[state3[i][it][0]][state3[i][it][1]]=='R')){
-            System.out.print(ConsoleColors.RED_BACKGROUND+afficheLettre(state3[i][it][2])
+            toPrint = (ConsoleColors.RED_BACKGROUND+afficheLettre(state3[i][it][2])
             +state3[i][it][3]+ConsoleColors.RESET);
+            printMessage(toPrint, false);
           }
           else if ((state3[i][it][0] != -1) 
           && (state[state3[i][it][0]][state3[i][it][1]]=='.')){
-            System.out.print(ConsoleColors.WHITE_BACKGROUND
+            toPrint = (ConsoleColors.WHITE_BACKGROUND
             +afficheLettre(state3[i][it][2])+state3[i][it][3]+ConsoleColors.RESET);
+            printMessage(toPrint, false);
         }
       }
-      System.out.println("");
+      toPrint = "";
+      printMessage(toPrint, true);
       }
     }
 
+    /**
+     * 
+     * Affiche le plateau de jeu dans la configuration portée par
+     * l'attribut d'état "state" en mode développement
+     * Cet affichage est seulement utile en développement et ne dois pas être utilisé dans la version de production
+     * 
+     */
     void afficheDev() {
-    // TESTS A DEGAGER
-    // possibleDests('R', 0, 7);
-    // System.out.println(deplace('B', "E3", "D4", ModeMvt.REAL));
-
     // Affichage console Dev
+    String toPrint = "";
     for (int it = 0; it < state.length; it++) {
       int letter = 65;
       if (it > 3) {
@@ -312,19 +328,24 @@ public class StuckWin {
       }
       for (int e = 1; e < state.length + 1; e++) {
         if (state[it][e] == 'B') {
-          System.out.print(ConsoleColors.BLUE + (char) letter + (7 - it) + " ");
+          toPrint = (ConsoleColors.BLUE + (char) letter + (7 - it) + " ");
+          printMessage(toPrint, false);
           letter += 1;
         } else if (state[it][e] == 'R') {
-          System.out.print(ConsoleColors.RED + (char) letter + (7 - it) + " ");
+          toPrint = (ConsoleColors.RED + (char) letter + (7 - it) + " ");
+          printMessage(toPrint, false);
           letter += 1;
         } else if (state[it][e] == '.') {
-          System.out.print(ConsoleColors.RESET + (char) letter + (7 - it) + " ");
+          toPrint = (ConsoleColors.RESET + (char) letter + (7 - it) + " ");
+          printMessage(toPrint, false);
           letter += 1;
         } else {
-          System.out.print(" " + ConsoleColors.RESET + state[it][e] + " ");
+          toPrint = (" " + ConsoleColors.RESET + state[it][e] + " ");
+          printMessage(toPrint, false);
         }
       }
-      System.out.println("");
+      toPrint = "";
+      printMessage(toPrint, true);
       }
     }
 
@@ -455,16 +476,10 @@ public class StuckWin {
         lesPossibles.charAt(6) != 'D' &&
         lesPossibles.charAt(6) != 'T' && lesPossibles.charAt(11) != 'R' ||
         state[hauteur][largeur] != couleur);
-    // System.out.println(largeur);
     int returnedHauteur = 7 - hauteur;
     char returnedLargeur = (char) (largeur + 61 + (7 - returnedHauteur));
     tabIa[0] = Character.toString(returnedLargeur) 
     + Integer.toString(returnedHauteur);
-    // System.out.println("TOUR DE L IA, couleur : " + couleur);
-    // System.out.println(tabIa[0]);
-    // System.out.println("couleur " + couleur);
-    // System.out.println(Arrays.toString(possibleDests(couleur, hauteur,
-    // largeur)));
     final int MAXR = 4;
     final int MINR = 1;
     boolean isValid;
@@ -479,21 +494,18 @@ public class StuckWin {
           if (lesPossibles.charAt(1) == 'L' && choixMv == 1) {
             tabIa[1] = Character.toString(returnedLargeur) 
             + Integer.toString(returnedHauteur - 1);
-            // System.out.println("OK GOT IT IM : " + couleur + " GOING LEFT");
             break;
           }
           if (lesPossibles.charAt(6) == 'D' && choixMv == 2) {
             returnedLargeur = (char) ((int) returnedLargeur + 1);
             tabIa[1] = Character.toString(returnedLargeur) 
             + Integer.toString(returnedHauteur - 1);
-            // System.out.println("OK GOT IT IM : " + couleur + " GOING DOWN");
             break;
           }
           if (lesPossibles.charAt(11) == 'R' && choixMv == 3) {
             returnedLargeur = (char) ((int) returnedLargeur + 1);
             tabIa[1] = Character.toString(returnedLargeur) 
             + Integer.toString(returnedHauteur);
-            // System.out.println("OK GOT IT IM : " + couleur + " GOING RIGHT");
             break;
           }
           isValid = false;
@@ -533,8 +545,6 @@ public class StuckWin {
       storeData(couleur);
     }
     return tabIa;
-    // throw new java.lang.UnsupportedOperationException("à compléter");
-
   }
 
   /**
@@ -568,7 +578,6 @@ public class StuckWin {
           do {
             coordsX = StdDraw.mouseX();
             coordsY = StdDraw.mouseY();
-            // System.out.println(coordsX + " souris " + coordsY);
           } while (!StdDraw.isMousePressed());
           System.out.println(coordsX + " souris " + coordsY);
           String[] mouseInput = new String[2];
@@ -591,7 +600,6 @@ public class StuckWin {
             do { // Prendre les coordonnées de la souris
               coordsX = StdDraw.mouseX();
               coordsY = StdDraw.mouseY();
-              // System.out.println(coordsX + " souris " + coordsY);
             } while (!StdDraw.isMousePressed());
             System.out.println(coordsX + " souris " + coordsY);
             String[] mouseInput = new String[2];
@@ -607,8 +615,8 @@ public class StuckWin {
           src = mvtIa[0];
           dst = mvtIa[1];
         }
-
-        System.out.println(src + "->" + dst);
+        String message = src + "->" + dst;
+        System.out.println(message);
 
         break;
     }
@@ -633,7 +641,6 @@ public class StuckWin {
       for (int e = 1; e < state.length + 1; e++) {
         if (state[it][e] == couleur) {
           String canMove = Arrays.toString(possibleDests(couleur, it, e));
-          // System.out.println("fonction finPartie : " + canMove);
           if (!"[XXX, XXX, XXX]".equals(canMove)) {
             return 'N';
           }
@@ -641,7 +648,6 @@ public class StuckWin {
       }
     }
     return couleur;
-    // throw new java.lang.UnsupportedOperationException("Fonction finPartie");
   }
 
   void createCoordsTab() {
@@ -652,23 +658,18 @@ public class StuckWin {
       double hauteur = (it < 4) 
       ? 7.7 - it * 1.75 : (it < 5) 
       ? 7.53 - it * 1.7 : 7.565 - it * 1.71;
-      // double hauteur = 7.7 - (it * 1.75) + ((it - 4) * 0.15);
       for (int e = 1; e < state.length + 1; e++) {
         if (state[it][e] != '-') {
           coordsTab[it][e][0] = hauteur;
           coordsTab[it][e][1] = largeur;
-          // StdDraw.setPenColor(StdDraw.GREEN);
-          // StdDraw.filledCircle(largeur, hauteur, 0.7);
         } else {
           // Set coordsTab to an impossible number to make tests later on
           coordsTab[it][e][0] = SCALE + 1;
           coordsTab[it][e][1] = SCALE + 1;
         }
-        // System.out.println(coordsTab[it][e][0] + " " + coordsTab[it][e][1]);
         StdDraw.show();
         hauteur -= 0.9;
         largeur += 1.5;
-        // StdDraw.text(largeur-1.5, hauteur+0.85, nomCase);
       }
     }
   }
@@ -684,28 +685,14 @@ public class StuckWin {
       for (int e = 1; e <= coordsTab.length; e++) {
         double x2 = coordsTab[it][e][1];
         double y2 = coordsTab[it][e][0];
-        // System.out.println(coordsTab[it][e][1] + " " + coordsTab[it][e][0]);
         double distance = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
         if (distance <= radius) {
-          // System.out.println("Dans un rayon " + distance);
-          // StdDraw.setPenColor(StdDraw.WHITE);
-          // StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
-          //System.out.println("1 Here, I found the token to be " + letter + " " + e);
-          //System.out.println("Representing " + (char)letter + " " + (7-it));
           if (state[it][e] == 'R' || state[it][e] == 'B'){
             source = (char)letter + "" + (7-it);
             dest = dragToken(it, e, couleur, radius);
           }
-          //System.out.println("DragToken executed");
           break;
-        } // else {
-          // System.out.println("Pas dans un rayon " + distance);
-          // continue;
-          // }
-          // StdDraw.setPenColor(StdDraw.YELLOW);
-          // StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.7);
-          // StdDraw.setPenColor(StdDraw.RED);
-          // StdDraw.filledCircle(x, y, 0.7);
+        }
         letter++;
         StdDraw.show();
       }
@@ -716,8 +703,6 @@ public class StuckWin {
   }
 
   String dragToken(int it, int e, char couleur, double radius) {
-    //System.out.println("it, e " + it + " " + e);
-    //System.out.println(state[it][e]);
     double mouseX = StdDraw.mouseX();
     double mouseY = StdDraw.mouseY();
     String returned = "";
@@ -812,6 +797,29 @@ public class StuckWin {
     }
     StdDraw.clear();
   }
+
+  void drawWinningScreen(char color, int coups) {
+    StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 32));
+    double wdh = 7;
+    double hgt = 2;
+    StdDraw.setPenColor(StdDraw.DARK_GRAY);
+    StdDraw.filledRectangle(0, 0, wdh+0.2, hgt+0.2);
+    StdDraw.setPenColor(StdDraw.WHITE);
+    StdDraw.filledRectangle(0, 0, wdh, hgt);
+
+    double hgtTxt = 0.4;
+    if (color == 'R') {
+      StdDraw.setPenColor();
+      StdDraw.setPenColor(StdDraw.RED);
+      StdDraw.text(0, hgtTxt, "Le joueur Rouge remporte cette manche!");
+    } else if (color == 'B') {
+      StdDraw.setPenColor(StdDraw.BLUE);
+      StdDraw.text(0, hgtTxt, "Le joueur Bleu remporte cette manche!");
+    }
+    StdDraw.setPenColor(StdDraw.DARK_GRAY);
+    StdDraw.text(0, -hgtTxt, "Coups joués : " + coups);
+  }
+
 
   void storeData(char curPlayer) {
     String result = createStringFromTab(state);
@@ -968,7 +976,6 @@ public class StuckWin {
       StdDraw.enableDoubleBuffering();
     }
 
-    // StuckWin.createCoordsTab();
     int gamemode = jeuInit.gamemodeSelect();
     nombreDeParties = jeuInit.nbPartiesSelect();
 
@@ -1002,7 +1009,7 @@ public class StuckWin {
       do {
 
         // séquence pour Bleu ou rouge
-        jeu.afficheDev();
+        jeu.affiche();
         if (StuckWin.affichageG == 1) {
           jeu.affichageGraphique();
           StdDraw.show();
@@ -1016,9 +1023,6 @@ public class StuckWin {
           } else {
             reponse = jeu.jouer(curCouleur);
           }
-          // reponse = jeu.jouerIA(curCouleur);
-
-          // reponse = jeu.jouer(curCouleur);
 
           src = reponse[0];
 
@@ -1051,19 +1055,21 @@ public class StuckWin {
         cpt++;
 
       } while (partie == 'N'); // TODO affiche vainqueur
+
       if (COLLECTING_DATA) {
         jeu.createAndWriteCSV(partie);
       }
 
+      if (affichageG ==1) {
+        jeu.drawWinningScreen(partie, cpt/2);
+      }
       System.out.printf("Victoire : " + partie + " (" + (cpt / 2) + " coups)");
       System.out.println(" ");
-      // jeu.afficheVainqueur(partie);
       if (partie == 'R') {
         victoiresRouge++;
       } else {
         victoiresBleu++;
       }
-      // jeu.createCoordsTab();
     }
     if (affichageG == 1) {
       StdDraw.show();
