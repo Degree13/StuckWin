@@ -102,7 +102,7 @@ public class StuckWin {
       } else {
           System.out.print(message);
       }
-      LOGGER.info(message);
+      //LOGGER.info(message);
     }
 
     /**
