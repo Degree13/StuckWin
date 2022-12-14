@@ -792,7 +792,12 @@ public class StuckWin {
       + "\t(1) PlayerVSPlayer \n"
       + "\t(2) PlayerVSAI \n"
       + "\t(3) AIVSAI");
-      gamemode = input.nextInt();
+      try {
+        gamemode = input.nextInt();
+      } catch (InputMismatchException e) {
+        System.out.println("Entrée invalide, réessayez");
+        input.nextLine();
+      }
     }
     System.out.println("Mode sélectionné : " + gamemode);
     return gamemode;
@@ -808,11 +813,12 @@ public class StuckWin {
   int nbPartiesSelect() {
     int nbParties = 0;
     while (nbParties < 1) {
+      System.out.println("Entrez le nombre de parties désirés : ");
       try {
-        System.out.println("Entrez le nombre de parties désirés : ");
         nbParties = input.nextInt();
       } catch (InputMismatchException e) {
         System.out.println("Entrée invalide, réessayez");
+        input.nextLine();
       }
     }
     System.out.println("Nombre de parties : " + nbParties);
@@ -1067,7 +1073,12 @@ public class StuckWin {
 
     while (StuckWin.affichageG != 1 && StuckWin.affichageG != 2) {
       System.out.println("Voulez-vous afficher les graphiques ? (1) oui (2) non");
-      StuckWin.affichageG = input.nextInt();
+      try {
+        StuckWin.affichageG = input.nextInt();
+      } catch(InputMismatchException e){
+        System.out.println("Entrée invalide, réessayez");
+        input.nextLine();
+      }
     }
 
     if (StuckWin.affichageG == 1) {
