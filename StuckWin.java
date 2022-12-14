@@ -7,18 +7,23 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Logger;
 import java.util.InputMismatchException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.ref.Cleaner.Cleanable;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PrimitiveIterator;
-import java.awt.Font;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.FontFormatException;
+
+import java.lang.ref.Cleaner.Cleanable;
 
 import javax.print.FlavorException;
 import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
@@ -116,16 +121,14 @@ public class StuckWin {
 
      * @param lcDest case destination Lc
 
-     * @param mode ModeMVT.REAL/SIMU selon qu'on réalise effectivement le déplacement ou qu'on le simule seulement.
+     * @param mode ModeMVT.REAL/SIMU selon qu'on réalise effectivement 
+     * le déplacement ou qu'on le simule seulement.
 
-     * @return enum {OK, BAD_COLOR, DEST_NOT_FREE, EMPTY_SRC, TOO_FAR, EXT_BOARD, EXIT} selon le déplacement
+     * @return enum {OK, BAD_COLOR, DEST_NOT_FREE, EMPTY_SRC, TOO_FAR, 
+     * EXT_BOARD, EXIT} selon le déplacement
 
      */
   Result deplace(char couleur, String lcSource, String lcDest, ModeMvt mode) {
-    // Traduction des Strings en Ints exploitables avec le tableau
-    // System.out.println("TESTS Source colonne:" + idColSource + " Source ligne:" +
-    // idLineSource + " Destination colonne :"+ idColDest + " Destination ligne:" +
-    // idLineDest);
     if (lcSource.length() != 2 || lcDest.length() != 2) {
       return Result.EXIT;
     }
@@ -374,6 +377,7 @@ public class StuckWin {
       
 
   void affichageGraphique() {
+    StdDraw.setFont(new Font("", Font.PLAIN, 16));
     StdDraw.setXscale(-SCALE, SCALE);
     StdDraw.setYscale(-SCALE, SCALE);
     StdDraw.clear();
@@ -457,7 +461,6 @@ public class StuckWin {
    *         jouer.
    * 
    */
-
   String[] jouerIA(char couleur) {
     final int MAXL = 8;
     final int MINL = 1;
@@ -556,7 +559,6 @@ public class StuckWin {
    * @return tableau de deux chaînes {source,destination} du pion à jouer
    * 
    */
-
   String[] jouer(char couleur) {
 
     String src = "";
@@ -635,7 +637,6 @@ public class StuckWin {
    * @return 'R' ou 'B' si vainqueur, 'N' si partie pas finie
    * 
    */
-
   char finPartie(char couleur) {
     for (int it = 0; it < state.length; it++) {
       for (int e = 1; e < state.length + 1; e++) {
@@ -650,6 +651,11 @@ public class StuckWin {
     return couleur;
   }
 
+  /**
+   * 
+   * Créer le tableau des coordonnées des points StdDraw
+   * 
+   */
   void createCoordsTab() {
     StdDraw.setXscale(-10, 10);
     StdDraw.setYscale(-10, 10);
@@ -674,6 +680,19 @@ public class StuckWin {
     }
   }
 
+  /**
+   * 
+   * Cherche la coordonnées la plus proche du clic
+   * 
+   * @param coordsTab le tableau des coordonnées
+   * @param x coordonnées x de la souris
+   * @param y coordonnées x de la souris
+   * @param couleur couleur du pion à rechercher
+   * 
+   * @return tableau contenant la position de départ et la destination du pion à
+   *         jouer.
+   * 
+   */
   String[] closestCoords(double[][][] coordsTab, double x, double y, char couleur) {
     double radius = 1;
     String source = "";
@@ -702,6 +721,18 @@ public class StuckWin {
     return returned;
   }
 
+  /**
+   * 
+   * Déplace le pion virtuellement et réellement
+   * 
+   * @param it coordonnées 1 du tableau
+   * @param e coordonnées 2 du tableau
+   * @param couleur couleur du pion à rechercher
+   * @param radius rayon d'interaction des pions
+   * 
+   * @return String contenant la destination du pion à jouer.
+   * 
+   */
   String dragToken(int it, int e, char couleur, double radius) {
     double mouseX = StdDraw.mouseX();
     double mouseY = StdDraw.mouseY();
@@ -747,6 +778,13 @@ public class StuckWin {
     return returned;
   }
 
+  /**
+   * 
+   * Permet la sélection du mode de jeu
+   * 
+   * @return Entier (1,2 ou 3) correspondant à l'input de l'utilisateur
+   * 
+   */
   int gamemodeSelect() {
     gamemode = -1;
     while (gamemode != 1 && gamemode != 2 && gamemode != 3) {
@@ -760,9 +798,16 @@ public class StuckWin {
     return gamemode;
   }
 
+  /**
+   * 
+   * Permet la sélection du nombre de parties souhaitées
+   * 
+   * @return Entier correspondant à l'input de l'utilisateur
+   * 
+   */
   int nbPartiesSelect() {
     int nbParties = 0;
-    while (nbParties < 1 || nbParties > 1000) {
+    while (nbParties < 1) {
       try {
         System.out.println("Entrez le nombre de parties désirés : ");
         nbParties = input.nextInt();
@@ -774,6 +819,11 @@ public class StuckWin {
     return nbParties;
   }
 
+  /**
+   * 
+   * Affiche l'animation d'entrée StdDraw, permet aussi de la skip
+   * 
+   */
   void introStuckWin() {
     int counter = 0;
     while (counter < 40 && !StdDraw.hasNextKeyTyped() 
@@ -798,7 +848,40 @@ public class StuckWin {
     StdDraw.clear();
   }
 
-  void drawWinningScreen(char color, int coups) {
+  void checkForFont(){
+    // check if the OCRAEXT.TTF font is installed on the user's computer
+    String fontName = "OCR A Extended";
+    Font font = new Font(fontName, Font.PLAIN, 12);
+    if (font.getFamily().equalsIgnoreCase(fontName)) {
+        System.out.println(fontName + " is installed on the user's computer");
+    } else {
+        System.out.println(fontName + " is not installed on the user's computer");
+        System.out.println(fontName + "...trying to install Font...");
+        File fontFile = new File("OCRAEXT.TTF");
+        try {
+          Font fontInstall = Font.createFont(Font.TRUETYPE_FONT, fontFile);
+          GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(fontInstall);
+      
+          // use the font in your program
+            fontInstall = new Font(fontName, Font.PLAIN, 26);
+        } catch (FontFormatException e) {
+            // handle the FontFormatException here
+        } catch (IOException e) {
+            // handle the IOException here
+        }
+        if (font.getFamily().equalsIgnoreCase(fontName)) {
+          String holdSting = fontName + " couln't be installed on user's comptuer, " 
+          + "please install OCRAEXT.TTF using the provided font file in the game files";
+          printMessage(holdSting, true);
+      }
+    }
+  }
+  /**
+   * 
+   * Permet l'affichage du gagnant, et de son nombre de coups
+   * 
+   */
+  void drawWinningScreen(char color, int coups, int victoiresBleu, int victoiresRouge) {
     StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 32));
     double wdh = 7;
     double hgt = 2;
@@ -816,17 +899,36 @@ public class StuckWin {
       StdDraw.setPenColor(StdDraw.BLUE);
       StdDraw.text(0, hgtTxt, "Le joueur Bleu remporte cette manche!");
     }
+
+    StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 26));
     StdDraw.setPenColor(StdDraw.DARK_GRAY);
     StdDraw.text(0, -hgtTxt, "Coups joués : " + coups);
+
+    StdDraw.text(-0.35, -hgtTxt-0.5, "Score(s) :  |" );
+    StdDraw.setPenColor(StdDraw.BLUE);
+    StdDraw.text(1, -hgtTxt-0.5, ""+victoiresBleu);
+    StdDraw.setPenColor(StdDraw.RED);
+    StdDraw.text(1.75, -hgtTxt-0.5, ""+victoiresRouge);
   }
 
-
+  /**
+   * 
+   * Permet de stocker les données du jeu à un instant donnée
+   * 
+   */
   void storeData(char curPlayer) {
     String result = createStringFromTab(state);
     stateData.add(result);
     stateDataColor.add(curPlayer);
   }
 
+  /**
+   * 
+   * Transforme le tableau donnée en String
+   * 
+   * @return renvoie le String
+   * 
+   */
   String createStringFromTab(char tab[][]) {
     String result = "";
     for (int i = 0; i < state.length; i++) {
@@ -958,6 +1060,7 @@ public class StuckWin {
   public static void main(String[] args) {
     StuckWin jeuInit = new StuckWin();
     jeuInit.createHashmap('R');
+    jeuInit.checkForFont();
     int victoiresBleu = 0;
     int victoiresRouge = 0;
     int nombreDeParties = 1;
@@ -1060,15 +1163,15 @@ public class StuckWin {
         jeu.createAndWriteCSV(partie);
       }
 
-      if (affichageG ==1) {
-        jeu.drawWinningScreen(partie, cpt/2);
-      }
       System.out.printf("Victoire : " + partie + " (" + (cpt / 2) + " coups)");
       System.out.println(" ");
       if (partie == 'R') {
         victoiresRouge++;
       } else {
         victoiresBleu++;
+      }
+      if (affichageG ==1) {
+        jeu.drawWinningScreen(partie, cpt/2, victoiresBleu, victoiresRouge);
       }
     }
     if (affichageG == 1) {
