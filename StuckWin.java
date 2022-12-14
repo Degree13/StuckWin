@@ -16,6 +16,7 @@ import java.io.BufferedWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PrimitiveIterator;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -797,6 +798,29 @@ public class StuckWin {
     StdDraw.clear();
   }
 
+  void drawWinningScreen(char color, int coups) {
+    StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 32));
+    double wdh = 7;
+    double hgt = 2;
+    StdDraw.setPenColor(StdDraw.DARK_GRAY);
+    StdDraw.filledRectangle(0, 0, wdh+0.2, hgt+0.2);
+    StdDraw.setPenColor(StdDraw.WHITE);
+    StdDraw.filledRectangle(0, 0, wdh, hgt);
+
+    double hgtTxt = 0.4;
+    if (color == 'R') {
+      StdDraw.setPenColor();
+      StdDraw.setPenColor(StdDraw.RED);
+      StdDraw.text(0, hgtTxt, "Le joueur Rouge remporte cette manche!");
+    } else if (color == 'B') {
+      StdDraw.setPenColor(StdDraw.BLUE);
+      StdDraw.text(0, hgtTxt, "Le joueur Bleu remporte cette manche!");
+    }
+    StdDraw.setPenColor(StdDraw.DARK_GRAY);
+    StdDraw.text(0, -hgtTxt, "Coups joués : " + coups);
+  }
+
+
   void storeData(char curPlayer) {
     String result = createStringFromTab(state);
     stateData.add(result);
@@ -1031,10 +1055,14 @@ public class StuckWin {
         cpt++;
 
       } while (partie == 'N'); // TODO affiche vainqueur
+
       if (COLLECTING_DATA) {
         jeu.createAndWriteCSV(partie);
       }
 
+      if (affichageG ==1) {
+        jeu.drawWinningScreen(partie, cpt/2);
+      }
       System.out.printf("Victoire : " + partie + " (" + (cpt / 2) + " coups)");
       System.out.println(" ");
       if (partie == 'R') {
