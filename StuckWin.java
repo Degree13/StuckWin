@@ -315,12 +315,12 @@ public class StuckWin {
     void afficheDev() {
     // Affichage console Dev
     String toPrint = "";
-    for (int it = 0; it < state.length; it++) {
+    for (int it = 0; it < SIZE-1; it++) {
       int letter = 65;
       if (it > 3) {
         letter += (it - 3);
       }
-      for (int e = 1; e < state.length + 1; e++) {
+      for (int e = 1; e < SIZE ; e++) {
         if (state[it][e] == 'B') {
           toPrint = (ConsoleColors.BLUE + (char) letter + (7 - it) + " ");
           printMessage(toPrint, false);
@@ -371,7 +371,7 @@ public class StuckWin {
     StdDraw.setYscale(-SCALE, SCALE);
     StdDraw.clear();
 
-    for (int it = 0; it < state.length; it++) {
+    for (int it = 0; it < SIZE-1; it++) {
       int letter = 65;
       double hauteur = 5 - it * 0.85;
       double largeur = 0;
@@ -390,7 +390,7 @@ public class StuckWin {
         hauteur = 7.505 - it * 1.71;
         letter += (it - 3);
       }
-      for (int e = 1; e < state.length + 1; e++) {
+      for (int e = 1; e < SIZE; e++) {
         if (state[it][e] != '-') {
           StdDraw.setPenColor(StdDraw.BLACK);
           hexagon(largeur, hauteur, 1);
@@ -424,8 +424,8 @@ public class StuckWin {
    * 
    * Dessine un héxagone
    * 
-   * @param x    coordonnées X
-   * @param y    coordonnées Y
+   * @param x coordonnées X
+   * @param y coordonnées Y
    * @param size taille de l'héxagone
    * 
    */
@@ -627,8 +627,8 @@ public class StuckWin {
    * 
    */
   char finPartie(char couleur) {
-    for (int it = 0; it < state.length; it++) {
-      for (int e = 1; e < state.length + 1; e++) {
+    for (int it = 0; it < SIZE-1; it++) {
+      for (int e = 1; e < SIZE; e++) {
         if (state[it][e] == couleur) {
           String canMove = Arrays.toString(possibleDests(couleur, it, e));
           if (!"[XXX, XXX, XXX]".equals(canMove)) {
@@ -648,12 +648,12 @@ public class StuckWin {
   void createCoordsTab() {
     StdDraw.setXscale(-10, 10);
     StdDraw.setYscale(-10, 10);
-    for (int it = 0; it < state.length; it++) {
+    for (int it = 0; it < SIZE-1; it++) {
       double largeur = -4.5;
       double hauteur = (it < 4) 
       ? 7.7 - it * 1.75 : (it < 5) 
       ? 7.53 - it * 1.7 : 7.565 - it * 1.71;
-      for (int e = 1; e < state.length + 1; e++) {
+      for (int e = 1; e < SIZE; e++) {
         if (state[it][e] != '-') {
           coordsTab[it][e][0] = hauteur;
           coordsTab[it][e][1] = largeur;
@@ -776,11 +776,12 @@ public class StuckWin {
    */
   int gamemodeSelect() {
     gamemode = -1;
-    while (gamemode != 1 && gamemode != 2 && gamemode != 3) {
+    while (gamemode < 1 || gamemode > 4) {
       System.out.println("Sélectionnez un mode de jeu : \n"
       + "\t(1) PlayerVSPlayer \n"
       + "\t(2) PlayerVSAI \n"
-      + "\t(3) AIVSAI");
+      + "\t(3) AIVSAI \n"
+      + "\t(4) AIVSAI configuration minimum");
       try {
         gamemode = input.nextInt();
       } catch (InputMismatchException e) {
@@ -865,10 +866,13 @@ public class StuckWin {
             // handle the IOException here
         }
         if (font.getFamily().equalsIgnoreCase(fontName)) {
-          String holdSting = fontName + " couln't be installed on user's comptuer, " 
+          String holdSting = fontName + " couln't be installed on user's computer, " 
           + "please install OCRAEXT.TTF using the provided font file in the game files";
           printMessage(holdSting, true);
-      }
+        } else {
+          String holdSting = fontName + " has been installed on user's computer"; 
+          printMessage(holdSting, true);
+        }
     }
   }
   /**
@@ -926,7 +930,7 @@ public class StuckWin {
    */
   String createStringFromTab(char tab[][]) {
     String result = "";
-    for (int i = 0; i < state.length; i++) {
+    for (int i = 0; i < SIZE-1; i++) {
       for (int j = 0; j < state[i].length; j++) {
         result += state[i][j];
       }
@@ -965,7 +969,7 @@ public class StuckWin {
   void dataPossibilities(char color){
     char[][] virtualState = state;
     String resultat = "";
-    for (int i = 0; i < state.length; i++) {
+    for (int i = 0; i < SIZE-1; i++) {
       for (int j = 0; j < state[i].length; j++) {
         String[] mouv = possibleDests(color, i, j);
 
@@ -1112,7 +1116,9 @@ public class StuckWin {
       do {
 
         // séquence pour Bleu ou rouge
-        jeu.affiche();
+        if (gamemode != 4){
+          jeu.affiche();
+        }
         if (StuckWin.affichageG == 1) {
           jeu.affichageGraphique();
           StdDraw.show();
@@ -1121,7 +1127,7 @@ public class StuckWin {
         do {
 
           status = Result.EXIT;
-          if (gamemode == 3) {
+          if (gamemode == 3 || gamemode == 4) {
             reponse = jeu.jouerIA(curCouleur);
           } else {
             reponse = jeu.jouer(curCouleur);
@@ -1144,8 +1150,9 @@ public class StuckWin {
           }
 
           partie = jeu.finPartie(nextCouleur);
-
-          System.out.println("status : " + status + " partie : " + partie);
+          if (gamemode != 4){
+            System.out.println("status : " + status + " partie : " + partie);
+          }
 
         } while (status != Result.OK && partie == 'N');
 
@@ -1162,9 +1169,10 @@ public class StuckWin {
       if (COLLECTING_DATA) {
         jeu.createAndWriteCSV(partie);
       }
-
-      System.out.printf("Victoire : " +partie+ " (" + (cpt / 2) + " coups)");
-      System.out.println(" ");
+      if (gamemode != 4){
+        System.out.printf("Victoire : " +partie+ " (" + (cpt / 2) + " coups)");
+        System.out.println(" ");
+      }
       if (partie == 'R') {
         victoiresRouge++;
       } else {
