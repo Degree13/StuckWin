@@ -85,7 +85,6 @@ public class StuckWin {
   //HashMap<String, Character> stateData = new HashMap<>();
   double[][][] coordsTab = new double[7][8][2];
 
-
     int [][][] state3 = {
       {{-1,-1}, {-1,-1}, {-1,-1}, {0,4,0,7}, {-1,-1}, {-1,-1}, {-1,-1}},
       {{-1,-1}, {-1,-1}, {1,3,0,6}, {-1,-1}, {0,5,1,7}, {-1,-1}, {-1,-1}},
@@ -231,38 +230,27 @@ public class StuckWin {
 
     switch (couleur) {
       case 'B':
-        if (idCol > 1) {
-          if (state[idLettre][idCol - 1] == '.') {
-            possibilites[0] = "LFT";
-          }
+        if ((idCol > 1) && (state[idLettre][idCol - 1] == '.')) {
+          possibilites[0] = "LFT";
         }
-        if (idLettre > 0) {
-          if (state[idLettre - 1][idCol] == '.') {
-            possibilites[1] = "TOP";
-          }
+        
+        if ((idLettre > 0) && (state[idLettre - 1][idCol] == '.')) {
+          possibilites[1] = "TOP";
         }
-        if (idLettre > 0 && idCol < 7) {
-          if (state[idLettre - 1][idCol + 1] == '.') {
-            possibilites[2] = "RGT";
-          }
+        if ((idLettre >0 && idCol <7)&&(state[idLettre-1][idCol+1] == '.')){
+          possibilites[2] = "RGT";
         }
         break;
 
       case 'R':
-        if (idCol > 1 && idLettre < 6) {
-          if (state[idLettre + 1][idCol - 1] == '.') {
-            possibilites[0] = "LFT";
-          }
+        if ((idCol >1 && idLettre <6)&&(state[idLettre+1][idCol-1] == '.')){
+          possibilites[0] = "LFT";
         }
-        if (idLettre < 6) {
-          if (state[idLettre + 1][idCol] == '.') {
-            possibilites[1] = "DWN";
-          }
+        if ((idLettre < 6) && (state[idLettre + 1][idCol] == '.')) {
+          possibilites[1] = "DWN";
         }
-        if (idCol < 7) {
-          if (state[idLettre][idCol + 1] == '.') {
-            possibilites[2] = "RGT";
-          }
+        if ((idCol < 7) && (state[idLettre][idCol + 1] == '.')) {
+          possibilites[2] = "RGT";
         }
         break;
 
@@ -284,35 +272,38 @@ public class StuckWin {
   void affiche() {
     // Affichage console
     String toPrint = "";
-      for(int i = 0; i < state3.length; i++) {
-        for(int it = 0; it < state3[i].length; it++){
-          if (state3[i][it][0] == -1){
-            toPrint = "  "+ConsoleColors.RESET;
-            printMessage(toPrint, false);
-      }
-          else if ((state3[i][it][0] != -1) 
-          && (state[state3[i][it][0]][state3[i][it][1]]=='B')){
-            toPrint = (ConsoleColors.BLUE_BACKGROUND+afficheLettre(state3[i][it][2])
-            +state3[i][it][3]+ConsoleColors.RESET);
-            printMessage(toPrint, false);
-          }
-          else if ((state3[i][it][0] != -1) 
-          && (state[state3[i][it][0]][state3[i][it][1]]=='R')){
-            toPrint = (ConsoleColors.RED_BACKGROUND+afficheLettre(state3[i][it][2])
-            +state3[i][it][3]+ConsoleColors.RESET);
-            printMessage(toPrint, false);
-          }
-          else if ((state3[i][it][0] != -1) 
-          && (state[state3[i][it][0]][state3[i][it][1]]=='.')){
-            toPrint = (ConsoleColors.WHITE_BACKGROUND
-            +afficheLettre(state3[i][it][2])+state3[i][it][3]+ConsoleColors.RESET);
-            printMessage(toPrint, false);
+    for(int i = 0; i < state3.length; i++) {
+      for(int it = 0; it < state3[i].length; it++){
+        if (state3[i][it][0] == -1){
+          toPrint = "  "+ConsoleColors.RESET;
+          printMessage(toPrint, false);
+        }
+        else if ((state3[i][it][0] != -1) 
+        && (state[state3[i][it][0]][state3[i][it][1]]=='B')){
+          toPrint = (ConsoleColors.BLUE_BACKGROUND
+          +afficheLettre(state3[i][it][2])
+          +state3[i][it][3]+ConsoleColors.RESET);
+          printMessage(toPrint, false);
+        }
+        else if ((state3[i][it][0] != -1) 
+        && (state[state3[i][it][0]][state3[i][it][1]]=='R')){
+          toPrint = (ConsoleColors.RED_BACKGROUND
+          +afficheLettre(state3[i][it][2])
+          +state3[i][it][3]+ConsoleColors.RESET);
+          printMessage(toPrint, false);
+        }
+        else if ((state3[i][it][0] != -1) 
+        && (state[state3[i][it][0]][state3[i][it][1]]=='.')){
+          toPrint = (ConsoleColors.WHITE_BACKGROUND
+          +afficheLettre(state3[i][it][2])+state3[i][it][3]
+          +ConsoleColors.RESET);
+          printMessage(toPrint, false);
         }
       }
-      toPrint = "";
-      printMessage(toPrint, true);
-      }
+    toPrint = "";
+    printMessage(toPrint, true);
     }
+  }
 
     /**
      * 
@@ -352,8 +343,6 @@ public class StuckWin {
       }
     }
 
-
-
     public static char afficheLettre(int ind) {
       switch(ind){
         case 0 :
@@ -373,7 +362,7 @@ public class StuckWin {
         default:
           return 'X';
       }
-  }
+    }
       
 
   void affichageGraphique() {
@@ -689,11 +678,11 @@ public class StuckWin {
    * @param y coordonnées x de la souris
    * @param couleur couleur du pion à rechercher
    * 
-   * @return tableau contenant la position de départ et la destination du pion à
-   *         jouer.
+   * @return tableau contenant la position de départ et
+   *  la destination du pion à jouer.
    * 
    */
-  String[] closestCoords(double[][][] coordsTab, double x, double y, char couleur) {
+  String[] closestCoords(double[][][] coordsTab,double x,double y,char couleur){
     double radius = 1;
     String source = "";
     String dest = "";
@@ -1174,7 +1163,7 @@ public class StuckWin {
         jeu.createAndWriteCSV(partie);
       }
 
-      System.out.printf("Victoire : " + partie + " (" + (cpt / 2) + " coups)");
+      System.out.printf("Victoire : " +partie+ " (" + (cpt / 2) + " coups)");
       System.out.println(" ");
       if (partie == 'R') {
         victoiresRouge++;
@@ -1190,7 +1179,7 @@ public class StuckWin {
     }
     System.out.println("Victoires Bleu :" + victoiresBleu 
     + " Victoires Rouge :" + victoiresRouge);
-    // System.out.println("Nombre de déplacements gauche des vainqueurs vs des
-    // perdants");
+    // System.out.println("Nombre de déplacements gauche des vainqueurs vs 
+    //des perdants");
   }
 }
