@@ -10,10 +10,7 @@ import java.util.logging.Logger;
 import java.util.InputMismatchException;
 import java.util.PrimitiveIterator;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -57,6 +54,10 @@ public class StuckWin {
 
   public static final String ENTRY_ERROR = "Entrée invalide, réessayez";
   public static String globalDeplace = "";
+
+  ArrayList<String> stateData = new ArrayList<>(10);
+  ArrayList<Character> stateDataColor = new ArrayList<>(10);
+  ArrayList<String> virtualStates = new ArrayList<>()
 
   private static final Logger LOGGER = Logger.getLogger(StuckWin.class.getName());
 
