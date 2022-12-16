@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch StuckWin_Dev",
+            "request": "launch",
+            "mainClass": "StuckWin_Dev",
+            "projectName": "StuckWin_a89b1e2d"
+        },
+        {
+            "type": "java",
             "name": "Launch StuckWin",
             "request": "launch",
             "mainClass": "StuckWin",
