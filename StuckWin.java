@@ -1,4 +1,5 @@
 import java.nio.channels.NonReadableChannelException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -138,8 +139,8 @@ public class StuckWin {
     int idLineSource = 55 - lcSource.charAt(1);
     int idLineDest = 55 - lcDest.charAt(1);
 
-    int idColSource = (lcSource.charAt(1) - 48) + (lcSource.charAt(0) - 68);
-    int idColDest = (lcDest.charAt(1) - 48) + (lcDest.charAt(0) - 68);
+    int idColSource = (lcSource.charAt(1)-48) + (lcSource.charAt(0)-68);
+    int idColDest = (lcDest.charAt(1)-48) + (lcDest.charAt(0)-68);
 
     if (idLineSource < 0 || idLineSource > 6 || idLineDest < 0 || idLineDest > 6 
     || idColSource < 1 || idColSource > 7 || idColDest < 1 || idColDest > 7) {
@@ -311,7 +312,8 @@ public class StuckWin {
      * 
      * Affiche le plateau de jeu dans la configuration portée par
      * l'attribut d'état "state" en mode développement
-     * Cet affichage est seulement utile en développement et ne dois pas être utilisé dans la version de production
+     * Cet affichage est seulement utile en développement et ne dois pas être 
+     * utilisé dans la version de production
      * 
      */
     void afficheDev() {
@@ -413,7 +415,7 @@ public class StuckWin {
           if (state[it][e] == '.') {
             StdDraw.setPenColor(StdDraw.BLACK);
           }
-          String nomCase = String.valueOf((char) letter) + String.valueOf(7 - it); 
+          String nomCase = String.valueOf((char)letter) + String.valueOf(7-it);
           // char et int a convertis en String
           StdDraw.text(largeur - 1.5, hauteur + 0.85, nomCase);
           letter += 1;
@@ -469,10 +471,11 @@ public class StuckWin {
       hauteur = (int) (Math.random() * (MAXH - MINH)) + MINH;
       largeur = (int) (Math.random() * (MAXL - MINL)) + MINL;
       lesPossibles = Arrays.toString(possibleDests(couleur, hauteur, largeur));
-    } while (lesPossibles.charAt(1) != 'L' &&
-        lesPossibles.charAt(6) != 'D' &&
-        lesPossibles.charAt(6) != 'T' && lesPossibles.charAt(11) != 'R' ||
-        state[hauteur][largeur] != couleur);
+    } while (lesPossibles.charAt(1) != 'L' 
+        && lesPossibles.charAt(6) != 'D' 
+        && lesPossibles.charAt(6) != 'T' 
+        && lesPossibles.charAt(11) != 'R' 
+        || state[hauteur][largeur] != couleur);
     int returnedHauteur = 7 - hauteur;
     char returnedLargeur = (char) (largeur + 61 + (7 - returnedHauteur));
     tabIa[0] = Character.toString(returnedLargeur) 
@@ -569,19 +572,23 @@ public class StuckWin {
     switch (couleur) {
 
       case 'B':
-
-        System.out.println("Mouvement " + couleur);
+        message = "Mouvement " + couleur;
+        printMessage(message, true);
 
         if (affichageG == 1) {
           do {
             coordsX = StdDraw.mouseX();
             coordsY = StdDraw.mouseY();
+
           } while (!StdDraw.isMousePressed());
-          System.out.println(coordsX + " souris " + coordsY);
+          message = coordsX + " souris " + coordsY;
+          printMessage(message, true);
+
           String[] mouseInput = new String[2];
           mouseInput = closestCoords(coordsTab, coordsX, coordsY, couleur);
           src = mouseInput[0];
           dst = mouseInput[1];
+
         } else {
           src = input.next();
           dst = input.next();
@@ -595,14 +602,19 @@ public class StuckWin {
         break;
 
       case 'R':
-        System.out.println("Mouvement " + couleur);
+        message = "Mouvement " + couleur;
+        printMessage(message, true);
+
         if (gamemode == 1) { // Si JoueurvsJoueur
           if (affichageG == 1) { // Si Affichage graphique activé
             do { // Prendre les coordonnées de la souris
               coordsX = StdDraw.mouseX();
               coordsY = StdDraw.mouseY();
+
             } while (!StdDraw.isMousePressed());
-            System.out.println(coordsX + " souris " + coordsY);
+            message = coordsX + " souris " + coordsY;
+            printMessage(message, true);
+
             String[] mouseInput = new String[2];
             mouseInput = closestCoords(coordsTab, coordsX, coordsY, couleur);
             src = mouseInput[0];
@@ -748,9 +760,6 @@ public class StuckWin {
     double mouseY = StdDraw.mouseY();
     String returned = "";
 
-    if (state[it][e] != couleur) {
-      System.out.println("Warning : Wrong color");
-    }
     while (StdDraw.isMousePressed()) {
       StdDraw.clear();
       mouseX = StdDraw.mouseX();
@@ -795,12 +804,16 @@ public class StuckWin {
    */
   int gamemodeSelect() {
     gamemode = -1;
+    String message = "";
+
     while (gamemode < 1 || gamemode > 4) {
-      System.out.println("Sélectionnez un mode de jeu : \n"
+      message = "Sélectionnez un mode de jeu : \n"
       + "\t(1) PlayerVSPlayer \n"
       + "\t(2) PlayerVSAI \n"
       + "\t(3) AIVSAI \n"
-      + "\t(4) AIVSAI configuration minimum");
+      + "\t(4) AIVSAI configuration minimum";
+      printMessage(message, true);
+
       try {
         gamemode = input.nextInt();
       } catch (InputMismatchException e) {
@@ -808,7 +821,10 @@ public class StuckWin {
         input.nextLine();
       }
     }
-    System.out.println("Mode sélectionné : " + gamemode);
+
+    message = "Mode sélectionné : " + gamemode;
+    printMessage(message, true);
+
     return gamemode;
   }
 
@@ -820,18 +836,26 @@ public class StuckWin {
    * 
    */
   int niWkcutSSelect() {
+    String message = "";
+
     while (niWkcutS < 1 || niWkcutS > 2) {
-      System.out.println("Mode Spécial ? : \n"
+      message = "Mode Spécial ? : \n"
       + "\t(1) StuckWin \n"
-      + "\t(2) niWkcutS \n");
+      + "\t(2) niWkcutS \n";
+      printMessage(message, true);
+
       try {
         niWkcutS = input.nextInt();
       } catch (InputMismatchException e) {
-        System.out.println("Entrée invalide, réessayez");
+        message = "Entrée invalide, réessayez";
+        printMessage(message, true);
         input.nextLine();
       }
     }
-    System.out.println("Mode sélectionné : " + niWkcutS);
+
+    message = "Mode sélectionné : " + niWkcutS;
+    printMessage(message, true);
+
     return niWkcutS;
   }
 
@@ -844,16 +868,22 @@ public class StuckWin {
    */
   int nbPartiesSelect() {
     int nbParties = 0;
+    String message = "";
+
     while (nbParties < 1) {
-      System.out.println("Entrez le nombre de parties désirés : ");
+      message = "Entrez le nombre de parties désirés : ";
+      printMessage(message, true);
+
       try {
         nbParties = input.nextInt();
       } catch (InputMismatchException e) {
-        System.out.println("Entrée invalide, réessayez");
+        message = "Entrée invalide, réessayez";
+        printMessage(message, true);
         input.nextLine();
       }
     }
-    System.out.println("Nombre de parties : " + nbParties);
+    message = "Nombre de parties : " + nbParties;
+    printMessage(message, true);
     return nbParties;
   }
 
@@ -891,32 +921,42 @@ public class StuckWin {
   void checkForFont(){
     // check if the OCRAEXT.TTF font is installed on the user's computer
     String fontName = "OCR A Extended";
+    String message = "";
     Font font = new Font(fontName, Font.PLAIN, 12);
+
     if (font.getFamily().equalsIgnoreCase(fontName)) {
-        System.out.println(fontName + " is installed on the user's computer");
+      message = fontName + " is installed on the user's computer";
+      printMessage(message, true);
     } else {
-        System.out.println(fontName + " is not installed on the user's computer");
-        System.out.println(fontName + "...trying to install Font...");
-        File fontFile = new File("OCRAEXT.TTF");
-        try {
-          Font fontInstall = Font.createFont(Font.TRUETYPE_FONT, fontFile);
-          GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(fontInstall);
+      message = fontName + " not installed on the user's computer";
+      printMessage(message, true);
+
+      message = fontName + "...trying to install Font...";
+      printMessage(message, true);
+
+      File fontFile = new File("OCRAEXT.TTF");
+      try {
+        Font fontInstall = Font.createFont(Font.TRUETYPE_FONT, fontFile);
+        GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(fontInstall);
+        //+ de 80 chars si on compte les espaces mais bon là...
       
-          // use the font in your program
-            fontInstall = new Font(fontName, Font.PLAIN, 26);
-        } catch (FontFormatException e) {
-            // handle the FontFormatException here
-        } catch (IOException e) {
-            // handle the IOException here
-        }
-        if (font.getFamily().equalsIgnoreCase(fontName)) {
-          String holdSting = fontName + " couln't be installed on user's computer, " 
-          + "please install OCRAEXT.TTF using the provided font file in the game files";
-          printMessage(holdSting, true);
-        } else {
-          String holdSting = fontName + " has been installed on user's computer"; 
-          printMessage(holdSting, true);
-        }
+        // use the font in your program
+        fontInstall = new Font(fontName, Font.PLAIN, 26);
+      } catch (FontFormatException e) {
+          // handle the FontFormatException here
+      } catch (IOException e) {
+          // handle the IOException here
+      }
+      if (font.getFamily().equalsIgnoreCase(fontName)) {
+        String holdString = fontName 
+        + " couln't be installed on user's computer, " 
+        + "please install OCRAEXT.TTF using the provided "
+        + "font file in the game files";
+        printMessage(holdString, true);
+      } else {
+        String holdString = fontName + " installed on user's computer"; 
+        printMessage(holdString, true);
+      }
     }
   }
   /**
@@ -951,7 +991,7 @@ public class StuckWin {
     StdDraw.setPenColor(StdDraw.BLUE);
     StdDraw.text(1, -hgtTxt-0.5, ""+victoiresBleu);
     StdDraw.setPenColor(StdDraw.RED);
-    StdDraw.text(1.75, -hgtTxt-0.5, ""+victoiresRouge);
+    StdDraw.text(2, -hgtTxt-0.5, ""+victoiresRouge);
   }
 
   /**
@@ -1198,13 +1238,18 @@ public class StuckWin {
     int victoiresBleu = 0;
     int victoiresRouge = 0;
     int nombreDeParties = 1;
+    String message = "";
 
     while (StuckWin.affichageG != 1 && StuckWin.affichageG != 2) {
-      System.out.println("Voulez-vous afficher les graphiques ? (1) oui (2) non");
+      message = "Voulez-vous afficher les graphiques ? (1) oui (2) non";
+      jeuInit.printMessage(message, true);
+
       try {
         StuckWin.affichageG = input.nextInt();
+
       } catch(InputMismatchException e){
-        System.out.println("Entrée invalide, réessayez");
+        message = "Entrée invalide, réessayez";
+        jeuInit.printMessage(message, true);
         input.nextLine();
       }
     }
@@ -1287,17 +1332,20 @@ public class StuckWin {
           if (status != Result.OK && affichageG == 1) {
             StdDraw.clear();
             jeu.affichageGraphique();
+
             StdDraw.setPenColor(StdDraw.WHITE);
             StdDraw.filledRectangle(0, 7.5, 1, 0.5);
+
             StdDraw.setPenColor(StdDraw.BLACK);
             StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 26));
-            String message = "status : " + status + " partie : " + partie;
+            message = "status : " + status + " partie : " + partie;
             StdDraw.text(0, 7.5, message);
+
             StdDraw.show();
           }
 
           partie = jeu.finPartie(nextCouleur);
-          String message = "status : " + status + " partie : " + partie;
+          message = "status : " + status + " partie : " + partie;
           if (gamemode != 4){
             jeu.printMessage(message, true);
           }
@@ -1319,7 +1367,7 @@ public class StuckWin {
       }
       if (gamemode != 4){
         System.out.printf("Victoire : " +partie+ " (" + (cpt / 2) + " coups)");
-        System.out.println(" ");
+        jeu.printMessage("", true);
       }
       if (partie == 'R') {
         victoiresRouge++;
@@ -1333,7 +1381,9 @@ public class StuckWin {
     if (affichageG == 1) {
       StdDraw.show();
     }
-    System.out.println("Victoires Bleu :" + victoiresBleu 
-    + " Victoires Rouge :" + victoiresRouge);
+
+    message = "Victoires Bleu :" + victoiresBleu 
+           + " Victoires Rouge :" + victoiresRouge;
+    jeuInit.printMessage(message, true);
   }
 }
