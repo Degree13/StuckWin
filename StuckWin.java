@@ -56,7 +56,10 @@ public class StuckWin {
 
   public static int gamemode = 0;
   public static boolean COLLECTING_DATA = false;
+  public static int niWkcutS = -1;
   public static int affichageG = -1;
+
+  public static String globalDeplace = "";
 
   private static final Logger LOGGER = Logger.getLogger(StuckWin.class.getName());
 
@@ -418,6 +421,9 @@ public class StuckWin {
         }
       }
     }
+    StdDraw.setPenColor(StdDraw.BLACK);
+    StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 26));
+    StdDraw.text(0, 7.5, globalDeplace);
   }
 
   /**
@@ -559,6 +565,8 @@ public class StuckWin {
     double coordsX;
     double coordsY;
 
+    String message = "";
+
     switch (couleur) {
 
       case 'B':
@@ -580,7 +588,10 @@ public class StuckWin {
           dst = input.next();
         }
 
-        System.out.println(src + "->" + dst);
+        message = src + "->" + dst;
+        globalDeplace = message;
+
+        printMessage(message, true);
 
         break;
 
@@ -606,8 +617,11 @@ public class StuckWin {
           src = mvtIa[0];
           dst = mvtIa[1];
         }
-        String message = src + "->" + dst;
-        System.out.println(message);
+        
+        message = src + "->" + dst;
+        globalDeplace = message;
+
+        printMessage(message, true);
 
         break;
     }
@@ -637,7 +651,15 @@ public class StuckWin {
         }
       }
     }
-    return couleur;
+    if (niWkcutS == 1) {
+      return couleur;
+    } else {
+      if (couleur == 'B') {
+        return 'R';
+      } else {
+        return 'B';
+      }
+    }
   }
 
   /**
@@ -755,8 +777,6 @@ public class StuckWin {
         + Math.pow(y2 - mouseY, 2));
 
         if (distance <= radius) {
-          System.out.println("I found the token to be " + it2 + " " + e2);
-          System.out.println("Representing " + (char)letter + " " + (7-it2));
           returned = (char)letter + "" + (7-it2);
           break;
         }
@@ -795,6 +815,29 @@ public class StuckWin {
 
   /**
    * 
+   * Permet la sélection d'un mode de jeu spécial
+   * 
+   * @return 1 ou 2 selon l'entrée utilisateur
+   * 
+   */
+  int niWkcutSSelect() {
+    while (niWkcutS < 1 || niWkcutS > 2) {
+      System.out.println("Mode Spécial ? : \n"
+      + "\t(1) StuckWin \n"
+      + "\t(2) niWkcutS \n");
+      try {
+        niWkcutS = input.nextInt();
+      } catch (InputMismatchException e) {
+        System.out.println("Entrée invalide, réessayez");
+        input.nextLine();
+      }
+    }
+    System.out.println("Mode sélectionné : " + niWkcutS);
+    return niWkcutS;
+  }
+
+  /**
+   * 
    * Permet la sélection du nombre de parties souhaitées
    * 
    * @return Entier correspondant à l'input de l'utilisateur
@@ -824,11 +867,11 @@ public class StuckWin {
     int counter = 0;
     while (counter < 40 && !StdDraw.hasNextKeyTyped() 
     && !StdDraw.isMousePressed()) {
-      StdDraw.picture(0.5, 0.5, "STUCKWIN_OPEN.gif", 1.5, 1);
+      StdDraw.picture(0.5, 0.5, "images/STUCKWIN_OPEN.gif", 1.5, 1);
       counter++;
     }
     while (!StdDraw.hasNextKeyTyped() && !StdDraw.isMousePressed()) {
-      StdDraw.picture(0.5, 0.5, "STUCKWIN_WAIT.gif", 1.5, 1);
+      StdDraw.picture(0.5, 0.5, "images/STUCKWIN_WAIT.gif", 1.5, 1);
     }
 
     //Flush nextKeyTyped
@@ -838,7 +881,7 @@ public class StuckWin {
 
     while (counter < 85 && !StdDraw.hasNextKeyTyped() 
     && !StdDraw.isMousePressed()) {
-      StdDraw.picture(0.5, 0.5, "STUCKWIN_CLOSE.gif", 1.5, 1);
+      StdDraw.picture(0.5, 0.5, "images/STUCKWIN_CLOSE.gif", 1.5, 1);
       counter++;
     }
     StdDraw.clear();
@@ -882,7 +925,7 @@ public class StuckWin {
    */
   void drawWinningScreen(char color, int coups, int victoiresBleu, int victoiresRouge) {
     StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 32));
-    double wdh = 7;
+    double wdh = 7.5;
     double hgt = 2;
     StdDraw.setPenColor(StdDraw.DARK_GRAY);
     StdDraw.filledRectangle(0, 0, wdh+0.2, hgt+0.2);
@@ -908,6 +951,97 @@ public class StuckWin {
     StdDraw.text(1, -hgtTxt-0.5, ""+victoiresBleu);
     StdDraw.setPenColor(StdDraw.RED);
     StdDraw.text(1.75, -hgtTxt-0.5, ""+victoiresRouge);
+  }
+
+  /**
+   * 
+   * Permet l'affichage et la sélection du mode de jeu
+   * 
+   */
+  void drawGamemodeSelect() {
+    StdDraw.setXscale(-10, 10);
+    StdDraw.setYscale(-10, 10);
+    StdDraw.picture(0,0, "images/STUCKWIN_GAMEMODE.jpg", 20,20);
+    StdDraw.show();
+    //StdDraw.setPenRadius(0.05);
+    //StdDraw.point(0, -1.68);
+    StdDraw.pause(500);
+    while (!StdDraw.isMousePressed()){
+      //Attendre l'utilisateur
+    }
+    double mouseX = StdDraw.mouseX();
+    double mouseY = StdDraw.mouseY();
+    printMessage(mouseX + " " + mouseY, true);
+    if (mouseY >= -1.68){
+      if (mouseX < 0) {
+        gamemode = 1;
+      } else {
+        gamemode = 2;
+      }
+    } else {
+      if (mouseX <= 0) {
+        gamemode = 3;
+      } else {
+        gamemode = 4;
+      }
+    }
+  }
+
+  /**
+   * 
+   * Permet l'affichage et la sélection du nombre de partie(s) voulu
+   * 
+   * @return le nombre de parties voulu
+   * 
+   */
+  int drawPartiesSelect() {
+    StdDraw.picture(0,0, "images/STUCKWIN_PARTIES.jpg", 20,20);
+    StdDraw.show();
+
+    StdDraw.pause(500);
+    while (!StdDraw.isMousePressed()){
+      //Attendre l'utilisateur
+    }
+    double mouseX = StdDraw.mouseX();
+    double mouseY = StdDraw.mouseY();
+
+    if (mouseY >= -1.68){
+      if (mouseX < 0) {
+        return 1;
+      } else {
+        return 3;
+      }
+    } else {
+      if (mouseX <= 0) {
+        return 5;
+      } else {
+        return 15;
+      }
+    }
+  }
+
+  /**
+   * 
+   * Permet l'affichage et la sélection d'un mode de jeu spécial
+   * 
+   * @return le mode de jeu choisis (1 ou 2)
+   * 
+   */
+  int drawSpecialSelect() {
+    StdDraw.picture(0,0, "images/STUCKWIN_SPECIAL.jpg", 20,20);
+    StdDraw.show();
+    StdDraw.pause(500);
+    while (!StdDraw.isMousePressed()){
+      //Attendre l'utilisateur
+    }
+    double mouseX = StdDraw.mouseX();
+    if (mouseX <= 0){
+      niWkcutS = 1;
+      return 1;
+    } else {
+      niWkcutS = 2;
+      return 2;
+    }
   }
 
   /**
@@ -1077,14 +1211,19 @@ public class StuckWin {
     if (StuckWin.affichageG == 1) {
       StdDraw.setXscale(-10, 10);
       StdDraw.setYscale(-10, 10);
-      StdDraw.setCanvasSize(1080, 1080);
+      StdDraw.setCanvasSize(1000, 1000);
 
       jeuInit.introStuckWin();
       StdDraw.enableDoubleBuffering();
-    }
+      jeuInit.drawGamemodeSelect();
+      jeuInit.drawSpecialSelect();
+      nombreDeParties = jeuInit.drawPartiesSelect();
 
-    int gamemode = jeuInit.gamemodeSelect();
-    nombreDeParties = jeuInit.nbPartiesSelect();
+    } else {
+      jeuInit.gamemodeSelect();
+      jeuInit.niWkcutSSelect();
+      nombreDeParties = jeuInit.nbPartiesSelect();
+    }
 
     for (int i = 0; i < nombreDeParties; i++) {
 
@@ -1125,8 +1264,9 @@ public class StuckWin {
         }
 
         do {
-
+          
           status = Result.EXIT;
+          
           if (gamemode == 3 || gamemode == 4) {
             reponse = jeu.jouerIA(curCouleur);
           } else {
@@ -1146,12 +1286,19 @@ public class StuckWin {
           if (status != Result.OK && affichageG == 1) {
             StdDraw.clear();
             jeu.affichageGraphique();
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.filledRectangle(0, 7.5, 1, 0.5);
+            StdDraw.setPenColor(StdDraw.BLACK);
+            StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 26));
+            String message = "status : " + status + " partie : " + partie;
+            StdDraw.text(0, 7.5, message);
             StdDraw.show();
           }
 
           partie = jeu.finPartie(nextCouleur);
+          String message = "status : " + status + " partie : " + partie;
           if (gamemode != 4){
-            System.out.println("status : " + status + " partie : " + partie);
+            jeu.printMessage(message, true);
           }
 
         } while (status != Result.OK && partie == 'N');
@@ -1187,7 +1334,5 @@ public class StuckWin {
     }
     System.out.println("Victoires Bleu :" + victoiresBleu 
     + " Victoires Rouge :" + victoiresRouge);
-    // System.out.println("Nombre de déplacements gauche des vainqueurs vs 
-    //des perdants");
   }
 }
