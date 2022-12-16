@@ -975,6 +975,37 @@ int gamemodeSelect() {
 
   /**
    * 
+   * Permet la sélection du nombre de parties souhaitées
+   * 
+   * @return Entier correspondant à l'input de l'utilisateur
+   * 
+   */
+  int rejouer() {
+    // Initialisation
+    int rejouer = 0;
+    String message = "";
+
+    // On demande jusqu'à ce qu'un input valide soit entrée
+    while (rejouer < 1 || rejouer > 2) {
+      message = "Partie fini, encore une petite dernière ? \n"
+      + "\t(1) Oui \n"
+      + "\t(2) Non";
+      printMessage(message, true);
+
+      try {
+        rejouer = input.nextInt();
+      } catch (InputMismatchException e) {
+        printMessage(ENTRY_ERROR, true);
+        input.nextLine();
+      }
+    }
+
+    // On print est renvoie la sélection
+    return rejouer;
+  }
+
+  /**
+   * 
    * Affiche l'animation d'entrée StdDraw, permet aussi de la skip
    * 
    */
@@ -1363,7 +1394,14 @@ int gamemodeSelect() {
         jeu.drawWinningScreen(partie, cpt/2, victoiresBleu, victoiresRouge);
         StdDraw.show();
       }
-      message = 
+
+      if (i == nombreDeParties-1) {
+        jeu.printMessage("", true);
+        int rejouer = jeu.rejouer();
+        if (rejouer == 1) {
+          i =- 1;
+        }
+      }
     }
 
     // On print le total de victoires bleu et rouge
