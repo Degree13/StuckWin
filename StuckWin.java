@@ -336,7 +336,7 @@ public class StuckWin {
     String toPrint = "";
 
     // On parcours le tableau state et on print les cases
-    for (int it = 0; it < SIZE-1; it++) {
+    for (int it = 0; it < BOARD_SIZE; it++) {
       int letter = 65;
       if (it > 3) {
         letter += (it - 3);
@@ -407,7 +407,7 @@ public class StuckWin {
     StdDraw.clear();
 
     // Création du tableau de jeu
-    for (int it = 0; it < SIZE-1; it++) {
+    for (int it = 0; it < BOARD_SIZE; it++) {
       int letter = 65;
       double hauteur = 5 - it * 0.85;
       double largeur = 0;
@@ -692,7 +692,7 @@ public class StuckWin {
    */
   char finPartie(char couleur) {
     // On parcours le tableau et on test les possibilités
-    for (int it = 0; it < SIZE-1; it++) {
+    for (int it = 0; it < BOARD_SIZE; it++) {
       for (int e = 1; e < SIZE; e++) {
         if (state[it][e] == couleur) {
           String canMove = Arrays.toString(possibleDests(couleur, it, e));
@@ -728,7 +728,7 @@ public class StuckWin {
     StdDraw.setYscale(-10, 10);
 
     // On parcours le tableau state
-    for (int it = 0; it < SIZE-1; it++) {
+    for (int it = 0; it < BOARD_SIZE; it++) {
       double largeur = -4.5;
       double hauteur;
       if (it < 4) {
@@ -1344,7 +1344,7 @@ int gamemodeSelect() {
             jeu.affichageGraphique();
 
             StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.filledRectangle(0, 7.5, 1, 0.5);
+            StdDraw.filledRectangle(0, 7.5, 2, 0.5);
 
             StdDraw.setPenColor(StdDraw.BLACK);
             StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 26));
@@ -1399,7 +1399,7 @@ int gamemodeSelect() {
         jeu.printMessage("", true);
         int rejouer = jeu.rejouer();
         if (rejouer == 1) {
-          i =- 1;
+          i -= 1;
         }
       }
     }
