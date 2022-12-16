@@ -8,14 +8,9 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Logger;
 import java.util.InputMismatchException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.PrimitiveIterator;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,11 +50,12 @@ public class StuckWin {
 
   final char VIDE = '.';
 
-  public static int gamemode = 0;
+  public static int gamemode;
   public static boolean COLLECTING_DATA = false;
-  public static int niWkcutS = -1;
-  public static int affichageG = -1;
+  public static int niWkcutS;
+  public static int affichageG;
 
+  public static final String ENTRY_ERROR = "Entrée invalide, réessayez";
   public static String globalDeplace = "";
 
   private static final Logger LOGGER = Logger.getLogger(StuckWin.class.getName());
@@ -83,10 +79,6 @@ public class StuckWin {
       { '-', 'B', 'B', 'B', 'B', '-', '-', '-' },
 
   };
-  ArrayList<String> stateData = new ArrayList<>(10);
-  ArrayList<Character> stateDataColor = new ArrayList<>(10);
-  ArrayList<String> virtualStates = new ArrayList<>();
-  //HashMap<String, Character> stateData = new HashMap<>();
   double[][][] coordsTab = new double[7][8][2];
 
     int [][][] state3 = {
@@ -107,11 +99,12 @@ public class StuckWin {
 
     public void printMessage(String message, boolean ligne) {
       if (ligne) {
-          System.out.println(message);
+        //le logger n'est pas en UTF-8, et rend la lecture du terminal difficile
+        //toutefois vous pouvez l'utiliser : LOGGER.info(message);
+        System.out.println(message);
       } else {
-          System.out.print(message);
+        System.out.print(message);
       }
-      //LOGGER.info(message);
     }
 
     /**
@@ -132,20 +125,31 @@ public class StuckWin {
 
      */
   Result deplace(char couleur, String lcSource, String lcDest, ModeMvt mode) {
+    // On vérifie que les chaînes de caractères ont bien une longueur de 2.
     if (lcSource.length() != 2 || lcDest.length() != 2) {
+      // Si ce n'est pas le cas, on retourne un résultat une erreur de format.
       return Result.EXIT;
     }
 
+    // On calcule les indices de ligne et de colonne correspondant aux positions
+    // de départ et de destination sur le plateau de jeu.
     int idLineSource = 55 - lcSource.charAt(1);
     int idLineDest = 55 - lcDest.charAt(1);
 
     int idColSource = (lcSource.charAt(1)-48) + (lcSource.charAt(0)-68);
     int idColDest = (lcDest.charAt(1)-48) + (lcDest.charAt(0)-68);
 
+    // Si les indices dépassent les limites du plateau (0 à 6 pour les lignes
+    // et 1 à 7 pour les colonnes)
     if (idLineSource < 0 || idLineSource > 6 || idLineDest < 0 || idLineDest > 6 
     || idColSource < 1 || idColSource > 7 || idColDest < 1 || idColDest > 7) {
+      // on retourne un résultat indiquant
+      // que les positions sont en dehors du plateau.
       return Result.EXT_BOARD;
     }
+
+    // On vérifie que la case de départ ne soit pas vide, que le pion
+    // à déplacer soit de la couleur indiquée et que la destination soit libre
     if (state[idLineSource][idColSource] == '.') {
       return Result.EMPTY_SRC;
     }
@@ -155,6 +159,8 @@ public class StuckWin {
     if (state[idLineDest][idColDest] != '.') {
       return Result.DEST_NOT_FREE;
     }
+
+    //On vérifie que la destination est bien parmi les possiblités
     String[] holdString = possibleDests(couleur, idLineSource, idColSource);
     String isTooFar = Arrays.toString(holdString);
     boolean boolTooFar = true;
@@ -196,9 +202,12 @@ public class StuckWin {
         }
         break;
       default:
+        // Sinon on envoie une erreur
         String message = "Fonction deplace : Couleur incompatible";
         throw new java.lang.UnsupportedOperationException(message);
     }
+
+    // Si on arrive là c'est que tout est bon, on déplace le pion
     state[idLineSource][idColSource] = '.';
     state[idLineDest][idColDest] = couleur;
     return Result.OK;
@@ -221,16 +230,18 @@ public class StuckWin {
    */
 
   String[] possibleDests(char couleur, int idLettre, int idCol) {
-
+    // On vérifie que idLettre et idCol ne sont pas trop grand ou trop petits
     if (idLettre > 6 || idLettre < 0 || idCol > 7 || idCol < 1) {
       String throwMsg = "Erreur, les valeurs entrées en paramètres" 
       + "de la fonction possibleDests ne correspondent à aucune case";
       throw new java.lang.UnsupportedOperationException(throwMsg);
     }
 
+    // On crée un tableau de String
     String[] possibilites = new String[3];
     Arrays.fill(possibilites, "XXX");
 
+    // On remplis le tableau de String reprséntant les différentes possibilités
     switch (couleur) {
       case 'B':
         if ((idCol > 1) && (state[idLettre][idCol - 1] == '.')) {
@@ -258,6 +269,7 @@ public class StuckWin {
         break;
 
         default:
+        // Ceci n'arrivera jamais ok
         String message = "Fonction PossibleDests : pas de couleur valide";
         throw new java.lang.UnsupportedOperationException(message);
           
@@ -275,6 +287,8 @@ public class StuckWin {
   void affiche() {
     // Affichage console
     String toPrint = "";
+
+    // On parcours le tableau state3 et on print les cases dans la console
     for(int i = 0; i < state3.length; i++) {
       for(int it = 0; it < state3[i].length; it++){
         if (state3[i][it][0] == -1){
@@ -303,7 +317,8 @@ public class StuckWin {
           printMessage(toPrint, false);
         }
       }
-    toPrint = "";
+    // Reset la couleur et sauter une ligne
+    toPrint = ""+ConsoleColors.RESET;
     printMessage(toPrint, true);
     }
   }
@@ -319,6 +334,8 @@ public class StuckWin {
     void afficheDev() {
     // Affichage console Dev
     String toPrint = "";
+
+    // On parcours le tableau state et on print les cases
     for (int it = 0; it < SIZE-1; it++) {
       int letter = 65;
       if (it > 3) {
@@ -342,39 +359,54 @@ public class StuckWin {
           printMessage(toPrint, false);
         }
       }
+      // Sauter une ligne
       toPrint = "";
       printMessage(toPrint, true);
       }
     }
 
-    public static char afficheLettre(int ind) {
-      switch(ind){
-        case 0 :
-          return 'A';
-        case 1 :
-          return 'B';
-        case 2 :
-          return 'C';
-        case 3 :
-          return 'D';
-        case 4 :
-          return 'E';
-        case 5 :
-          return 'F';
-        case 6 :
-          return 'G';
-        default:
-          return 'X';
-      }
+  /**
+   * @param ind Entier représentant une lettre
+   *
+   * Traduction partiel des INT en lettre
+   * 
+   * @return une lettre
+   * 
+   */
+  public static char afficheLettre(int ind) {
+    switch(ind){
+      case 0 :
+        return 'A';
+      case 1 :
+        return 'B';
+      case 2 :
+        return 'C';
+      case 3 :
+        return 'D';
+      case 4 :
+        return 'E';
+      case 5 :
+        return 'F';
+      case 6 :
+        return 'G';
+      default:
+        return 'X';
     }
+  }
       
-
+  /**
+   *
+   * Permet d'afficher les graphiques
+   * 
+   */
   void affichageGraphique() {
+    // Initialisation
     StdDraw.setFont(new Font("", Font.PLAIN, 16));
     StdDraw.setXscale(-SCALE, SCALE);
     StdDraw.setYscale(-SCALE, SCALE);
     StdDraw.clear();
 
+    // Création du tableau de jeu
     for (int it = 0; it < SIZE-1; it++) {
       int letter = 65;
       double hauteur = 5 - it * 0.85;
@@ -397,8 +429,10 @@ public class StuckWin {
       for (int e = 1; e < SIZE; e++) {
         if (state[it][e] != '-') {
           StdDraw.setPenColor(StdDraw.BLACK);
+          // Création des hexagones
           hexagon(largeur, hauteur, 1);
-
+          
+          // Sélection de la couleur qui va être utilisé
           if (state[it][e] == 'B') {
             StdDraw.setPenColor(StdDraw.BLUE);
           } else if (state[it][e] == 'R') {
@@ -407,11 +441,13 @@ public class StuckWin {
             StdDraw.setPenColor(StdDraw.WHITE);
           }
 
+          // Création des pions
           StdDraw.filledCircle(largeur, hauteur, 0.7);
           hauteur -= 0.9;
           largeur += 1.5;
-          StdDraw.setPenColor(StdDraw.WHITE);
 
+          // Ecriture des noms des pions (H6 par exemple)
+          StdDraw.setPenColor(StdDraw.WHITE);
           if (state[it][e] == '.') {
             StdDraw.setPenColor(StdDraw.BLACK);
           }
@@ -458,6 +494,7 @@ public class StuckWin {
    * 
    */
   String[] jouerIA(char couleur) {
+    // Initialisation
     final int MAXL = 8;
     final int MINL = 1;
     final int MAXH = 7;
@@ -467,6 +504,11 @@ public class StuckWin {
     int hauteur;
     int largeur;
 
+    // Pendant que je n'ai pas un pion valide, j'en choisis 1 aléatoirement,
+    // Sinon, j'en cherche une autre, et je choisi une possibilité de 
+    // déplacement aléatoire
+
+    // Sélection de la case
     do {
       hauteur = (int) (Math.random() * (MAXH - MINH)) + MINH;
       largeur = (int) (Math.random() * (MAXL - MINL)) + MINL;
@@ -488,6 +530,7 @@ public class StuckWin {
       isValid = true;
       int choixMv = (int) (Math.random() * (MAXR - MINR)) + MINR;
 
+      // Sélection du déplacement
       switch (couleur) {
 
         case 'R':
@@ -497,13 +540,13 @@ public class StuckWin {
             break;
           }
           if (lesPossibles.charAt(6) == 'D' && choixMv == 2) {
-            returnedLargeur = (char) ((int) returnedLargeur + 1);
+            returnedLargeur = (char) (returnedLargeur + 1);
             tabIa[1] = Character.toString(returnedLargeur) 
             + Integer.toString(returnedHauteur - 1);
             break;
           }
           if (lesPossibles.charAt(11) == 'R' && choixMv == 3) {
-            returnedLargeur = (char) ((int) returnedLargeur + 1);
+            returnedLargeur = (char) (returnedLargeur + 1);
             tabIa[1] = Character.toString(returnedLargeur) 
             + Integer.toString(returnedHauteur);
             break;
@@ -513,13 +556,13 @@ public class StuckWin {
 
         case 'B':
           if (lesPossibles.charAt(1) == 'L' && choixMv == 1) {
-            returnedLargeur = (char) ((int) returnedLargeur - 1);
+            returnedLargeur = (char) (returnedLargeur - 1);
             tabIa[1] = Character.toString(returnedLargeur) 
             + Integer.toString(returnedHauteur);
             break;
           }
           if (lesPossibles.charAt(6) == 'T' && choixMv == 2) {
-            returnedLargeur = (char) ((int) returnedLargeur - 1);
+            returnedLargeur = (char) (returnedLargeur - 1);
             tabIa[1] = Character.toString(returnedLargeur) 
             + Integer.toString(returnedHauteur + 1);
             break;
@@ -532,24 +575,24 @@ public class StuckWin {
           isValid = false;
           break;
         default:
+          // Normalement pas possible d'arriver là
           String message = "Fonction JouerIA : pas de couleur valide";
           throw new java.lang.UnsupportedOperationException(message);
       }
-    } while (isValid == false);
+    } while (!isValid);
 
     if ("".equals(tabIa[0]) || "".equals(tabIa[1])) {
+      // pareil
       String message = "Fonction JouerIA : tabIa vide";
       throw new java.lang.UnsupportedOperationException(message);
     }
-    if (COLLECTING_DATA) {
-      storeData(couleur);
-    }
+    // Quand tout est bon on revoi le résultat
     return tabIa;
   }
 
   /**
    * 
-   * gère le jeu en fonction du joueur/couleur
+   * Gère le jeu en fonction du joueur/couleur
    * 
    * @param couleur
    * 
@@ -557,7 +600,7 @@ public class StuckWin {
    * 
    */
   String[] jouer(char couleur) {
-
+    // Initialisation
     String src = "";
 
     String dst = "";
@@ -569,6 +612,7 @@ public class StuckWin {
 
     String message = "";
 
+    // Selon les entrées de l'utilisateur, on gère le tour de chacun
     switch (couleur) {
 
       case 'B':
@@ -581,11 +625,10 @@ public class StuckWin {
             coordsY = StdDraw.mouseY();
 
           } while (!StdDraw.isMousePressed());
-          message = coordsX + " souris " + coordsY;
-          printMessage(message, true);
 
-          String[] mouseInput = new String[2];
-          mouseInput = closestCoords(coordsTab, coordsX, coordsY, couleur);
+          String[] mouseInput = 
+          closestCoords(coordsTab, coordsX, coordsY, couleur);
+
           src = mouseInput[0];
           dst = mouseInput[1];
 
@@ -594,7 +637,7 @@ public class StuckWin {
           dst = input.next();
         }
 
-        message = src + "->" + dst;
+        message = src + " -> " + dst;
         globalDeplace = message;
 
         printMessage(message, true);
@@ -612,11 +655,10 @@ public class StuckWin {
               coordsY = StdDraw.mouseY();
 
             } while (!StdDraw.isMousePressed());
-            message = coordsX + " souris " + coordsY;
-            printMessage(message, true);
 
-            String[] mouseInput = new String[2];
-            mouseInput = closestCoords(coordsTab, coordsX, coordsY, couleur);
+            String[] mouseInput = 
+            closestCoords(coordsTab, coordsX, coordsY, couleur);
+
             src = mouseInput[0];
             dst = mouseInput[1];
           } else {
@@ -636,9 +678,6 @@ public class StuckWin {
 
         break;
     }
-    if (COLLECTING_DATA) {
-      storeData(couleur);
-    }
     return new String[] { src, dst };
   }
 
@@ -652,16 +691,19 @@ public class StuckWin {
    * 
    */
   char finPartie(char couleur) {
+    // On parcours le tableau et on test les possibilités
     for (int it = 0; it < SIZE-1; it++) {
       for (int e = 1; e < SIZE; e++) {
         if (state[it][e] == couleur) {
           String canMove = Arrays.toString(possibleDests(couleur, it, e));
           if (!"[XXX, XXX, XXX]".equals(canMove)) {
+            // Si on en trouve une c'est qu'on peut encore jouer
             return 'N';
           }
         }
       }
     }
+    // Si le mode niWkcutS est choisis, on inverse le gagnant
     if (niWkcutS == 1) {
       return couleur;
     } else {
@@ -677,23 +719,35 @@ public class StuckWin {
    * 
    * Créer le tableau des coordonnées des points StdDraw
    * 
+   * Il est nécessaire afin de pouvoir déplacer les pions à la souris
+   * 
    */
   void createCoordsTab() {
+    // Initialisation
     StdDraw.setXscale(-10, 10);
     StdDraw.setYscale(-10, 10);
+
+    // On parcours le tableau state
     for (int it = 0; it < SIZE-1; it++) {
       double largeur = -4.5;
-      double hauteur = (it < 4) 
-      ? 7.7 - it * 1.75 : (it < 5) 
-      ? 7.53 - it * 1.7 : 7.565 - it * 1.71;
+      double hauteur;
+      if (it < 4) {
+        hauteur = 7.7 - it * 1.75;
+      } else if (it < 5) {
+        hauteur = 7.53 - it * 1.7;
+      } else {
+        hauteur = 7.565 - it * 1.71;
+      }
+
       for (int e = 1; e < SIZE; e++) {
         if (state[it][e] != '-') {
           coordsTab[it][e][0] = hauteur;
           coordsTab[it][e][1] = largeur;
         } else {
-          // Set coordsTab to an impossible number to make tests later on
-          coordsTab[it][e][0] = SCALE + 1;
-          coordsTab[it][e][1] = SCALE + 1;
+          // Si ce point n'est pas valide on lui attribut une coordonnées 
+          // en dehors du tableau (invalide)
+          coordsTab[it][e][0] = SCALE + 1.0;
+          coordsTab[it][e][1] = SCALE + 1.0;
         }
         StdDraw.show();
         hauteur -= 0.9;
@@ -707,8 +761,11 @@ public class StuckWin {
    * Cherche la coordonnées la plus proche du clic
    * 
    * @param coordsTab le tableau des coordonnées
+   * 
    * @param x coordonnées x de la souris
+   * 
    * @param y coordonnées x de la souris
+   * 
    * @param couleur couleur du pion à rechercher
    * 
    * @return tableau contenant la position de départ et
@@ -716,20 +773,28 @@ public class StuckWin {
    * 
    */
   String[] closestCoords(double[][][] coordsTab,double x,double y,char couleur){
+    // Initialisation
     double radius = 1;
     String source = "";
     String dest = "";
     String[] returned = new String[2]; 
+
+    // On parcours le tableau coordsTab
     for (int it = 0; it < coordsTab.length; it++) {
       int letter = 65;
       letter += (it-3);
+
       for (int e = 1; e <= coordsTab.length; e++) {
         double x2 = coordsTab[it][e][1];
         double y2 = coordsTab[it][e][0];
         double distance = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
+
         if (distance <= radius) {
+          // Si la click effectué est proche d'une coordonnées
           if (state[it][e] == 'R' || state[it][e] == 'B'){
+            // Et qu'il est bleu ou rouge
             source = (char)letter + "" + (7-it);
+            // On affiche une animation de déplacement de pion
             dest = dragToken(it, e, couleur, radius);
           }
           break;
@@ -738,6 +803,8 @@ public class StuckWin {
         StdDraw.show();
       }
     }
+
+    // On renvoie les coordonnées de source et dest
     returned[0] = source;
     returned[1] = dest;
     return returned;
@@ -756,17 +823,22 @@ public class StuckWin {
    * 
    */
   String dragToken(int it, int e, char couleur, double radius) {
+    // Initialisation
     double mouseX = StdDraw.mouseX();
     double mouseY = StdDraw.mouseY();
     String returned = "";
 
+    // Pendant que l'utilisateur n'a pas relaché le pion,
+    // On affiche le pion attaché à sa souris
     while (StdDraw.isMousePressed()) {
       StdDraw.clear();
       mouseX = StdDraw.mouseX();
       mouseY = StdDraw.mouseY();
       affichageGraphique();
+
       StdDraw.setPenColor(StdDraw.WHITE);
       StdDraw.filledCircle(coordsTab[it][e][1], coordsTab[it][e][0], 0.8);
+
       if (state[it][e] == 'R') {
         StdDraw.setPenColor(StdDraw.RED);
       } else {
@@ -776,15 +848,20 @@ public class StuckWin {
       StdDraw.show();
     }
 
+    // une fois qu'il à laché le pion, on parcours le tableau coordsTab
     for (int it2 = 0; it2 < coordsTab.length; it2++) {
       int letter = 65+it2-3;
+
       for (int e2 = 1; e2 < coordsTab.length+1; e2++) {
         double x2 = coordsTab[it2][e2][1];
         double y2 = coordsTab[it2][e2][0];
         double distance = Math.sqrt(Math.pow(x2 - mouseX, 2) 
         + Math.pow(y2 - mouseY, 2));
 
+        // Si à l'endroit où à l'utilisateur à laché le pion
+        // correspond a une case
         if (distance <= radius) {
+          // On note la case
           returned = (char)letter + "" + (7-it2);
           break;
         }
@@ -792,6 +869,7 @@ public class StuckWin {
         StdDraw.show();
       }
     }
+    // On renvoie la case
     return returned;
   }
 
@@ -802,10 +880,11 @@ public class StuckWin {
    * @return Entier (1,2 ou 3) correspondant à l'input de l'utilisateur
    * 
    */
-  int gamemodeSelect() {
-    gamemode = -1;
+int gamemodeSelect() {
+    // Initialisation
     String message = "";
 
+    // On demande jusqu'à ce qu'un input valide soit entrée
     while (gamemode < 1 || gamemode > 4) {
       message = "Sélectionnez un mode de jeu : \n"
       + "\t(1) PlayerVSPlayer \n"
@@ -817,11 +896,12 @@ public class StuckWin {
       try {
         gamemode = input.nextInt();
       } catch (InputMismatchException e) {
-        System.out.println("Entrée invalide, réessayez");
+        printMessage(ENTRY_ERROR, true);
         input.nextLine();
       }
     }
 
+    // On print est renvoie la sélection
     message = "Mode sélectionné : " + gamemode;
     printMessage(message, true);
 
@@ -836,8 +916,11 @@ public class StuckWin {
    * 
    */
   int niWkcutSSelect() {
+    // Initialisation
     String message = "";
+    printMessage(message, true);
 
+    // On demande jusqu'à ce qu'un input valide soit entrée
     while (niWkcutS < 1 || niWkcutS > 2) {
       message = "Mode Spécial ? : \n"
       + "\t(1) StuckWin \n"
@@ -847,12 +930,12 @@ public class StuckWin {
       try {
         niWkcutS = input.nextInt();
       } catch (InputMismatchException e) {
-        message = "Entrée invalide, réessayez";
-        printMessage(message, true);
+        printMessage(ENTRY_ERROR, true);
         input.nextLine();
       }
     }
 
+    // On print est renvoie la sélection
     message = "Mode sélectionné : " + niWkcutS;
     printMessage(message, true);
 
@@ -867,9 +950,11 @@ public class StuckWin {
    * 
    */
   int nbPartiesSelect() {
+    // Initialisation
     int nbParties = 0;
     String message = "";
 
+    // On demande jusqu'à ce qu'un input valide soit entrée
     while (nbParties < 1) {
       message = "Entrez le nombre de parties désirés : ";
       printMessage(message, true);
@@ -877,11 +962,12 @@ public class StuckWin {
       try {
         nbParties = input.nextInt();
       } catch (InputMismatchException e) {
-        message = "Entrée invalide, réessayez";
-        printMessage(message, true);
+        printMessage(ENTRY_ERROR, true);
         input.nextLine();
       }
     }
+
+    // On print est renvoie la sélection
     message = "Nombre de parties : " + nbParties;
     printMessage(message, true);
     return nbParties;
@@ -893,23 +979,30 @@ public class StuckWin {
    * 
    */
   void introStuckWin() {
+    // Initialisation
     int counter = 0;
+
+    // On affiche l'animation d'entrée tant qu'elle n'est pas fini et
+    // qu'une touche n'a pas été entrée ou que la souris n'a pas été cliqué
     while (counter < 40 && !StdDraw.hasNextKeyTyped() 
     && !StdDraw.isMousePressed()) {
       StdDraw.picture(0.5, 0.5, "images/STUCKWIN_OPEN.gif", 1.5, 1);
       counter++;
     }
+    // Pareil pour l'animation d'attente
     while (!StdDraw.hasNextKeyTyped() && !StdDraw.isMousePressed()) {
       StdDraw.picture(0.5, 0.5, "images/STUCKWIN_WAIT.gif", 1.5, 1);
     }
 
-    //Flush nextKeyTyped
+    // On réinitialise nextKeyTyped pour après
     while (StdDraw.hasNextKeyTyped()) {
       StdDraw.nextKeyTyped();
     }
 
+    // Une pause pour évité de prendre en compte le clic 2x
     StdDraw.pause(250);
 
+    // Pareil pour l'animation de fermeture
     while (counter < 80 && !StdDraw.hasNextKeyTyped() 
     && !StdDraw.isMousePressed()) {
       StdDraw.picture(0.5, 0.5, "images/STUCKWIN_CLOSE.gif", 1.5, 1);
@@ -918,12 +1011,19 @@ public class StuckWin {
     StdDraw.clear();
   }
 
+  /**
+   * 
+   * Permet de vérifié que la police d'écriture utilisé dans le programme 
+   * est utilisable par le programme
+   * 
+   */
   void checkForFont(){
-    // check if the OCRAEXT.TTF font is installed on the user's computer
+    // Initialisation
     String fontName = "OCR A Extended";
     String message = "";
     Font font = new Font(fontName, Font.PLAIN, 12);
 
+    // On fait les tests, si c'est pas bon on essaye d'installer
     if (font.getFamily().equalsIgnoreCase(fontName)) {
       message = fontName + " is installed on the user's computer";
       printMessage(message, true);
@@ -941,11 +1041,11 @@ public class StuckWin {
         //+ de 80 chars si on compte les espaces mais bon là...
       
         // use the font in your program
-        fontInstall = new Font(fontName, Font.PLAIN, 26);
-      } catch (FontFormatException e) {
+        new Font(fontName, Font.PLAIN, 26);
+      } catch (FontFormatException | IOException e) {
           // handle the FontFormatException here
-      } catch (IOException e) {
-          // handle the IOException here
+          message = "FontFormatException or IOException";
+          printMessage(message, true);
       }
       if (font.getFamily().equalsIgnoreCase(fontName)) {
         String holdString = fontName 
@@ -959,21 +1059,26 @@ public class StuckWin {
       }
     }
   }
+
   /**
    * 
    * Permet l'affichage du gagnant, et de son nombre de coups
    * 
    */
   void drawWinningScreen(char color, int coups, int victoiresBleu, int victoiresRouge) {
+    // Initialisation
     StdDraw.setFont(new Font("OCR A Extended", Font.PLAIN, 32));
     double wdh = 7.5;
     double hgt = 2;
+    double hgtTxt = 0.4;
+
+    // Création du rectangle
     StdDraw.setPenColor(StdDraw.DARK_GRAY);
     StdDraw.filledRectangle(0, 0, wdh+0.2, hgt+0.2);
     StdDraw.setPenColor(StdDraw.WHITE);
     StdDraw.filledRectangle(0, 0, wdh, hgt);
 
-    double hgtTxt = 0.4;
+    // Ecriture du texte
     if (color == 'R') {
       StdDraw.setPenColor();
       StdDraw.setPenColor(StdDraw.RED);
@@ -1000,19 +1105,21 @@ public class StuckWin {
    * 
    */
   void drawGamemodeSelect() {
+    // Initialisation
     StdDraw.setXscale(-10, 10);
     StdDraw.setYscale(-10, 10);
     StdDraw.picture(0,0, "images/STUCKWIN_GAMEMODE.jpg", 20,20);
     StdDraw.show();
-    //StdDraw.setPenRadius(0.05);
-    //StdDraw.point(0, -1.68);
+
+    // Pause pour ne pas clic 2x par erreur
     StdDraw.pause(500);
+
     while (!StdDraw.isMousePressed()){
       //Attendre l'utilisateur
     }
     double mouseX = StdDraw.mouseX();
     double mouseY = StdDraw.mouseY();
-    printMessage(mouseX + " " + mouseY, true);
+
     if (mouseY >= -1.68){
       if (mouseX < 0) {
         gamemode = 1;
@@ -1036,10 +1143,13 @@ public class StuckWin {
    * 
    */
   int drawPartiesSelect() {
+    // Initialisation
     StdDraw.picture(0,0, "images/STUCKWIN_PARTIES.jpg", 20,20);
     StdDraw.show();
 
+    // Pause pour ne pas clic 2x par erreur
     StdDraw.pause(500);
+
     while (!StdDraw.isMousePressed()){
       //Attendre l'utilisateur
     }
@@ -1069,9 +1179,13 @@ public class StuckWin {
    * 
    */
   int drawSpecialSelect() {
+    // Initialisation
     StdDraw.picture(0,0, "images/STUCKWIN_SPECIAL.jpg", 20,20);
     StdDraw.show();
+
+    // Pause pour ne pas clic 2x par erreur
     StdDraw.pause(500);
+
     while (!StdDraw.isMousePressed()){
       //Attendre l'utilisateur
     }
@@ -1085,161 +1199,17 @@ public class StuckWin {
     }
   }
 
-  /**
-   * 
-   * Permet de stocker les données du jeu à un instant donnée
-   * 
-   */
-  void storeData(char curPlayer) {
-    String result = createStringFromTab(state);
-    stateData.add(result);
-    stateDataColor.add(curPlayer);
-  }
-
-  /**
-   * 
-   * Transforme le tableau donnée en String
-   * 
-   * @return renvoie le String
-   * 
-   */
-  String createStringFromTab(char tab[][]) {
-    String result = "";
-    for (int i = 0; i < SIZE-1; i++) {
-      for (int j = 0; j < state[i].length; j++) {
-        result += state[i][j];
-      }
-    }
-    return result;
-  }
-
-  void createAndWriteCSV(char winner) {
-    try {
-
-      File csvFile = new File("data.csv");
-
-      FileWriter fw = new FileWriter(csvFile, true);
-      BufferedWriter bw = new BufferedWriter(fw);
-
-      // If the file does not exist, create it and write the header row
-      if (!csvFile.exists()) {
-        bw.write("Board,NextWhoPlays,Winner");
-        bw.newLine();
-      }
-      //stateData.putAll(StateData);
-      int i = 0;
-      for (String element : stateData) {
-        bw.write(element + "," + stateDataColor.get(i) + "," + winner);
-        bw.newLine();
-        i++;
-      }
-      stateData.clear();
-      stateDataColor.clear();
-      bw.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  void dataPossibilities(char color){
-    char[][] virtualState = state;
-    String resultat = "";
-    for (int i = 0; i < SIZE-1; i++) {
-      for (int j = 0; j < state[i].length; j++) {
-        String[] mouv = possibleDests(color, i, j);
-
-        switch (color){
-          case 'B':
-            if (!mouv[0].equals("XXX")) {
-              //deplace un pion sur le plateau virtuel
-              virtualState[i][j] = '.'; 
-              virtualState[i][j-1] = 'B';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            if (!mouv[1].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i+1][j-1] = 'B';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            if (!mouv[2].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i+1][j] = 'B';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            break;
-
-          case 'R':
-            if (!mouv[0].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i-1][j] = 'R';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            if (!mouv[1].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i-1][j+1] = 'R';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            if (!mouv[2].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i][j+1] = 'R';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            break;
-        }
-      }
-    }
-  }
-
-  void jouerStupidTurtle(char color){
-    dataPossibilities(color);
-    for (String element : virtualStates) {
-      continue;
-    }
-  }
-
-  void createHashmap(char color){
-    Map<String, Integer> stringCounts = new HashMap<>();
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader("hashmap.csv"));
-    
-      String line;
-      while ((line = reader.readLine()) != null) {
-        String[] values = line.split(",");
-        // Do something with the values
-      }
-    
-      reader.close();
-    } catch (FileNotFoundException e) {
-      // Handle the FileNotFoundException here
-      System.err.println("Could not find file: " + e.getMessage());
-    } catch (IOException e) {
-      // Handle the IOException here
-      System.err.println("Error reading file: " + e.getMessage());
-    }
-    
-  }
-
   public static void main(String[] args) {
+    // Initialisation
     StuckWin jeuInit = new StuckWin();
-    jeuInit.createHashmap('R');
     jeuInit.checkForFont();
+
     int victoiresBleu = 0;
     int victoiresRouge = 0;
     int nombreDeParties = 1;
     String message = "";
 
+    // On demande à l'utilisateur la sélection de l'affichage
     while (StuckWin.affichageG != 1 && StuckWin.affichageG != 2) {
       message = "Voulez-vous afficher les graphiques ? (1) oui (2) non";
       jeuInit.printMessage(message, true);
@@ -1248,13 +1218,18 @@ public class StuckWin {
         StuckWin.affichageG = input.nextInt();
 
       } catch(InputMismatchException e){
-        message = "Entrée invalide, réessayez";
-        jeuInit.printMessage(message, true);
+        jeuInit.printMessage(ENTRY_ERROR, true);
         input.nextLine();
       }
     }
 
+    // Si l'affichage est activé, on utilise StdDraw
     if (StuckWin.affichageG == 1) {
+      message = "Attention, les inputs dans le terminal sont maintenant "
+      + "désactivés, veuillez utiliser l'affichage StdDraw pour intéragir "
+      + "avec le jeu";
+      jeuInit.printMessage(message, true);
+
       StdDraw.setXscale(-10, 10);
       StdDraw.setYscale(-10, 10);
       StdDraw.setCanvasSize(1000, 1000);
@@ -1266,11 +1241,13 @@ public class StuckWin {
       nombreDeParties = jeuInit.drawPartiesSelect();
 
     } else {
+      // Sinon on écrit dans le terminal
       jeuInit.gamemodeSelect();
       jeuInit.niWkcutSSelect();
       nombreDeParties = jeuInit.nbPartiesSelect();
     }
 
+    // On joue le nombre de parties voulu
     for (int i = 0; i < nombreDeParties; i++) {
 
       StuckWin jeu = new StuckWin();
@@ -1311,14 +1288,14 @@ public class StuckWin {
 
         do {
           
-          status = Result.EXIT;
-          
+          // On joue l'IA ou le joueur dépendament du gamemode
           if (gamemode == 3 || gamemode == 4) {
             reponse = jeu.jouerIA(curCouleur);
           } else {
             reponse = jeu.jouer(curCouleur);
           }
 
+          // On récupère la source et la destination du pion à joué
           src = reponse[0];
 
           dest = reponse[1];
@@ -1327,8 +1304,10 @@ public class StuckWin {
 
             return;
 
+          // On le déplace
           status = jeu.deplace(curCouleur, src, dest, ModeMvt.REAL);
 
+          // Si l'affichage graphique est activé on le met à jour
           if (status != Result.OK && affichageG == 1) {
             StdDraw.clear();
             jeu.affichageGraphique();
@@ -1345,11 +1324,14 @@ public class StuckWin {
           }
 
           partie = jeu.finPartie(nextCouleur);
-          message = "status : " + status + " partie : " + partie;
+
           if (gamemode != 4){
+            // On print le status actuel du jeu 
+            message = "status : " + status + " partie : " + partie;
             jeu.printMessage(message, true);
           }
-
+          // Pendant que l'entrée n'est pas valide et la partie n'est pas fini 
+          //on re-demande le déplacement d'un pion
         } while (status != Result.OK && partie == 'N');
 
         tmp = curCouleur;
@@ -1359,29 +1341,32 @@ public class StuckWin {
         nextCouleur = tmp;
 
         cpt++;
+        // Pendant que la partie n'est pas fini, on recommence
+      } while (partie == 'N');
 
-      } while (partie == 'N'); // TODO affiche vainqueur
-
-      if (COLLECTING_DATA) {
-        jeu.createAndWriteCSV(partie);
-      }
       if (gamemode != 4){
+        // On print le vainqueur et son nombre de coups utilisé
         System.out.printf("Victoire : " +partie+ " (" + (cpt / 2) + " coups)");
-        jeu.printMessage("", true);
+        System.out.println("");
+        jeu.affiche();
       }
+
+      // On incrémente les compteurs de victoire
       if (partie == 'R') {
         victoiresRouge++;
       } else {
         victoiresBleu++;
       }
+
       if (affichageG ==1) {
+        // On dessine le gagnant
         jeu.drawWinningScreen(partie, cpt/2, victoiresBleu, victoiresRouge);
+        StdDraw.show();
       }
-    }
-    if (affichageG == 1) {
-      StdDraw.show();
+      message = 
     }
 
+    // On print le total de victoires bleu et rouge
     message = "Victoires Bleu :" + victoiresBleu 
            + " Victoires Rouge :" + victoiresRouge;
     jeuInit.printMessage(message, true);

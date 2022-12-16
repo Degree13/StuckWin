@@ -15,3 +15,7 @@ Stuckwin est un jeu à deux joueurs dont les règles sont les suivantes :
 - un jeton ne peut pas sauter un ou plusieurs autres jetons,
 - si lorsque vient son tour, un joueur n’a plus aucune possibilité de déplacement de ses jetons, il gagne la partie,
 
+Ce jeu peut être joué au terminal, ou graphiquement à la souris, à vous de chosisir !
+
+Il est aussi possible de jouer contre soi-même, contre une IA, ou une IA contre une IA.
+
