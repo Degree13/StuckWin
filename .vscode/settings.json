@@ -1,3 +1,7 @@
 {
-    "java.debug.settings.onBuildFailureProceed": true
+    "java.debug.settings.onBuildFailureProceed": true,
+    "sonarlint.connectedMode.project": {
+        "connectionId": "http://sonar.iut-bm.univ-fcomte.fr:9000/",
+        "projectKey": "thisIsATotallySecuredkey2"
+    }
 }
