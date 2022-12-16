@@ -215,8 +215,7 @@ public class StuckWin {
    * 
    * @param idCol    id de la colonne du pion à jouer
    * 
-   * @return tableau des trois positions jouables par le pion (redondance possible
-   *         sur les bords)
+   * @return tableau des trois positions jouables par le pion 
    * 
    */
 
@@ -879,7 +878,9 @@ public class StuckWin {
       StdDraw.nextKeyTyped();
     }
 
-    while (counter < 85 && !StdDraw.hasNextKeyTyped() 
+    StdDraw.pause(250);
+
+    while (counter < 80 && !StdDraw.hasNextKeyTyped() 
     && !StdDraw.isMousePressed()) {
       StdDraw.picture(0.5, 0.5, "images/STUCKWIN_CLOSE.gif", 1.5, 1);
       counter++;
