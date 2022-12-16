@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      - StuckWin # or the name of your main branch
+      - Master # or the name of your main branch
 jobs:
   build:
     name: Build
