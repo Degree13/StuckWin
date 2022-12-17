@@ -9,6 +9,8 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 import java.util.InputMismatchException;
 import java.util.PrimitiveIterator;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.io.*;
 
@@ -49,15 +51,17 @@ public class StuckWin {
 
   public static int gamemode;
   public static boolean COLLECTING_DATA = false;
-  public static int niWkcutS;
+  public static int niWkcutS = -1;
   public static int affichageG;
 
   public static final String ENTRY_ERROR = "Entrée invalide, réessayez";
   public static String globalDeplace = "";
 
+  public static HashMap<String, Data> dataMap = new HashMap<>();
+
   ArrayList<String> stateData = new ArrayList<>(10);
   ArrayList<Character> stateDataColor = new ArrayList<>(10);
-  ArrayList<String> virtualStates = new ArrayList<>()
+  ArrayList<String> virtualStates = new ArrayList<>();
 
   private static final Logger LOGGER = Logger.getLogger(StuckWin.class.getName());
 
@@ -1231,10 +1235,143 @@ int gamemodeSelect() {
     }
   }
 
+  /**
+   * 
+   * Transforme le tableau donnée en String
+   * 
+   * @return renvoie le String
+   * 
+   */
+  String createStringFromTab(char tab[][]) {
+    String result = "";
+    for (int i = 0; i < SIZE-1; i++) {
+      for (int j = 0; j < state[i].length; j++) {
+        if (state[i][j] != '-') {
+          result += state[i][j];
+        }
+      }
+    }
+    return result;
+  }
+
+  void dataPossibilities(char color){
+    char[][] virtualState = state;
+    String resultat = "";
+    for (int i = 0; i < SIZE-1; i++) {
+      for (int j = 0; j < state[i].length; j++) {
+        String[] mouv = possibleDests(color, i, j);
+
+        switch (color){
+          case 'B':
+            if (!mouv[0].equals("XXX")) {
+              //deplace un pion sur le plateau virtuel
+              virtualState[i][j] = '.'; 
+              virtualState[i][j-1] = 'B';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
+            }
+            if (!mouv[1].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i+1][j-1] = 'B';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
+            }
+            if (!mouv[2].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i+1][j] = 'B';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
+            }
+            break;
+
+          case 'R':
+            if (!mouv[0].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i-1][j] = 'R';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
+            }
+            if (!mouv[1].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i-1][j+1] = 'R';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
+            }
+            if (!mouv[2].equals("XXX")) {
+              virtualState[i][j] = '.'; 
+              virtualState[i][j+1] = 'R';
+              resultat = createStringFromTab(virtualState);
+              virtualStates.add(resultat);
+              virtualState = state;
+            }
+            break;
+        }
+      }
+    }
+  }
+
+HashMap<String, Data> dataMap2 = importData();
+
+HashMap<String, Data> importData() {
+  try {
+    // Read the serialized data from the file
+    FileInputStream fis = new FileInputStream("data.bin");
+    ObjectInputStream ois = new ObjectInputStream(fis);
+    HashMap<String, Data> dataMap2 = (HashMap<String, Data>) ois.readObject();
+    ois.close();
+  } catch (IOException | ClassNotFoundException e) {
+    printMessage("This is bad", true);
+  }
+  return dataMap2;
+}
+
+void takeData(char color) throws IOException {
+  // Create a HashMap and add some data to it
+  // dataMap.put("key1", new Data(42, 'R'));
+  // dataMap.put("key2", new Data(123, 'R'));
+  // dataMap.put("key3", new Data(567, 'R'));
+
+  String stateString = createStringFromTab(state);
+
+  if (dataMap2.containsKey(stateString)) {
+    int currentValue = dataMap2.get(stateString).getValue();
+    char currentColor = dataMap2.get(stateString).getC();
+    if (currentValue == niWkcutS && currentColor == color) {
+      dataMap.put(stateString, currentValue + 1, currentColor);
+    }
+    dataMap.put("key2", currentValue + 1);
+  }
+  dataMap2.put(stateString, new Data(niWkcutS, color));
+
+  // Serialize the HashMap to a file
+  FileOutputStream fos = new FileOutputStream("data.bin");
+  ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+  oos.writeObject(dataMap2);
+  oos.close();
+
+  // Print the values of the data objects in the HashMap
+  for (String key : dataMap2.keySet()) {
+    System.out.println(key + ": " + dataMap2.get(key).getValue() + dataMap2.get(key).getC());
+  }
+}
+
   public static void main(String[] args) {
     // Initialisation
     StuckWin jeuInit = new StuckWin();
     jeuInit.checkForFont();
+
+    try {
+      jeuInit.takeData();
+    } catch (IOException e) {
+      jeuInit.printMessage("yup we're f***", true);
+    }
+
 
     int victoiresBleu = 0;
     int victoiresRouge = 0;
