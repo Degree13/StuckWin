@@ -50,18 +50,19 @@ public class StuckWin {
   final char VIDE = '.';
 
   public static int gamemode;
-  public static boolean COLLECTING_DATA = false;
+  public static boolean COLLECTING_DATA = true;
   public static int niWkcutS = -1;
   public static int affichageG;
 
   public static final String ENTRY_ERROR = "Entrée invalide, réessayez";
   public static String globalDeplace = "";
 
-  public static HashMap<String, Data> dataMap = new HashMap<>();
-
-  ArrayList<String> stateData = new ArrayList<>(10);
-  ArrayList<Character> stateDataColor = new ArrayList<>(10);
+  ArrayList<String> storedData = new ArrayList<>(10);
+  ArrayList<Character> storedDataColor = new ArrayList<>(10);
   ArrayList<String> virtualStates = new ArrayList<>();
+
+  public static HashMap<String, Data> dataMapRed = new HashMap<>();
+  public static HashMap<String, Data> dataMapBlue = new HashMap<>();
 
   private static final Logger LOGGER = Logger.getLogger(StuckWin.class.getName());
 
@@ -591,6 +592,9 @@ public class StuckWin {
       String message = "Fonction JouerIA : tabIa vide";
       throw new java.lang.UnsupportedOperationException(message);
     }
+    if (COLLECTING_DATA) {
+      storeData(couleur);
+    }
     // Quand tout est bon on revoi le résultat
     return tabIa;
   }
@@ -682,6 +686,9 @@ public class StuckWin {
         printMessage(message, true);
 
         break;
+    }
+    if (COLLECTING_DATA) {
+      storeData(couleur);
     }
     return new String[] { src, dst };
   }
@@ -1315,68 +1322,161 @@ int gamemodeSelect() {
     }
   }
 
-HashMap<String, Data> dataMap2 = importData();
-
-HashMap<String, Data> importData() {
-  try {
-    // Read the serialized data from the file
-    FileInputStream fis = new FileInputStream("data.bin");
-    ObjectInputStream ois = new ObjectInputStream(fis);
-    HashMap<String, Data> dataMap2 = (HashMap<String, Data>) ois.readObject();
-    ois.close();
-  } catch (IOException | ClassNotFoundException e) {
-    printMessage("This is bad", true);
+  /**
+   * 
+   * Permet de stocker les données du jeu à un instant donnée
+   * 
+   */
+  void storeData(char curPlayer) {
+    String result = createStringFromTab(state);
+    storedData.add(result);
+    storedDataColor.add(curPlayer);
   }
-  return dataMap2;
-}
 
-void takeData(char color) throws IOException {
-  // Create a HashMap and add some data to it
-  // dataMap.put("key1", new Data(42, 'R'));
-  // dataMap.put("key2", new Data(123, 'R'));
-  // dataMap.put("key3", new Data(567, 'R'));
+  public static HashMap<String, Data> importData(String nameFile) {
+    try {
+      // Read the serialized data from the file
+      FileInputStream fis = new FileInputStream(nameFile);
+      ObjectInputStream ois = new ObjectInputStream(fis);
 
-  String stateString = createStringFromTab(state);
+      if (nameFile.equals("dataRed.bin")) {
+        dataMapRed = (HashMap<String, Data>) ois.readObject();
+      } else if (nameFile.equals("dataBlue.bin")) {
+        dataMapBlue = (HashMap<String, Data>) ois.readObject();
+      } else {
+        System.out.println("Something is off");
+      }
+      ois.close();
 
-  if (dataMap2.containsKey(stateString)) {
-    int currentValue = dataMap2.get(stateString).getValue();
-    char currentColor = dataMap2.get(stateString).getC();
-    if (currentValue == niWkcutS && currentColor == color) {
-      dataMap.put(stateString, currentValue + 1, currentColor);
+    } catch (IOException e) {
+      System.out.println("IOExeption");
+    } catch (ClassNotFoundException e){
+      System.out.println("ClassNotFound");
     }
-    dataMap.put("key2", currentValue + 1);
+
+    if (nameFile.equals("dataRed.bin")) {
+      return dataMapRed;
+    } else {
+      return dataMapBlue;
+    }
   }
-  dataMap2.put(stateString, new Data(niWkcutS, color));
 
-  // Serialize the HashMap to a file
-  FileOutputStream fos = new FileOutputStream("data.bin");
-  ObjectOutputStream oos = new ObjectOutputStream(fos);
+  /**
+   * @param winner
+   */
+  void takeData(char winner) {
+    // Create a HashMap and add some data to it
+    // dataMap.put("key1", new Data(42, 'R'));
+    // dataMap.put("key2", new Data(123, 'R'));
+    // dataMap.put("key3", new Data(567, 'R'));
 
-  oos.writeObject(dataMap2);
-  oos.close();
+    //String stateString = createStringFromTab(state);
 
-  // Print the values of the data objects in the HashMap
-  for (String key : dataMap2.keySet()) {
-    System.out.println(key + ": " + dataMap2.get(key).getValue() + dataMap2.get(key).getC());
+    int i = 0;
+    // Pour chaque set de données récupéré par storeData
+    for (String stateString : storedData) {
+
+      if (storedDataColor.get(i) == 'R') {
+        if (dataMapRed.containsKey(stateString)) {
+          int WCountB = dataMapRed.get(stateString).getWCountB();
+          int WCountR = dataMapRed.get(stateString).getWCountR();
+          Data data = dataMapRed.get(stateString);
+          if (winner == 'R') {
+            data.setWCountR(WCountR+1);
+            data.setWCountB(WCountB);
+          } else { // winner is equal to B
+            data.setWCountR(WCountR);
+            data.setWCountB(WCountB+1);
+          }
+          dataMapRed.put(stateString, data);
+        } else { // first time situation
+          if (winner == 'R') { // red win count to 1
+            dataMapRed.put(stateString, new Data(1, 0));
+          } else { // blue win count to 1
+            dataMapRed.put(stateString, new Data(0, 1));
+          }
+        }
+      } else { // storedDataColor == 'B'
+        if (dataMapBlue.containsKey(stateString)) {
+          int WCountB = dataMapBlue.get(stateString).getWCountB();
+          int WCountR = dataMapBlue.get(stateString).getWCountR();
+          Data data = dataMapBlue.get(stateString);
+          if (winner == 'R') {
+            data.setWCountR(WCountR+1);
+            data.setWCountB(WCountB);
+          } else { // winner is equal to B
+            data.setWCountR(WCountR);
+            data.setWCountB(WCountB+1);
+          }
+          dataMapBlue.put(stateString, data);
+        } else { // first time situation
+          if (winner == 'R') { // red win count to 1
+            dataMapBlue.put(stateString, new Data(1, 0));
+          } else { // blue win count to 1
+            dataMapBlue.put(stateString, new Data(0, 1));
+          }
+        }
+      }
+    i++;
+    }
+    storedData.clear();
+    storedDataColor.clear();
   }
-}
+
+  public static void serializeToFile(){
+    // Serialize the HashMap Red and Blue to files
+    try {
+      FileOutputStream fos = new FileOutputStream("dataRed.bin");
+      ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+      oos.writeObject(dataMapRed);
+      oos.close();
+    } catch (IOException e) {
+      System.out.println("takeData Red IOExeption");
+    }
+
+    try {
+      FileOutputStream fos = new FileOutputStream("dataBlue.bin");
+      ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+      oos.writeObject(dataMapBlue);
+      oos.close();
+    } catch (IOException e) {
+      System.out.println("takeData Blue IOExeption");
+    }
+  }
+
+  public static void printData(HashMap<String, Data> dataMap){
+    // Print the values of the data objects in the HashMap
+    for (String key : dataMap.keySet()) {
+      System.out.println(key + ": " + dataMap.get(key).getWCountB() + " " + dataMap.get(key).getWCountR());
+    }
+  }
 
   public static void main(String[] args) {
     // Initialisation
     StuckWin jeuInit = new StuckWin();
     jeuInit.checkForFont();
+    String message = "";
 
-    try {
-      jeuInit.takeData();
-    } catch (IOException e) {
-      jeuInit.printMessage("yup we're f***", true);
-    }
+    //try {
+    message = "retrieving data from files, this operation WHILE take a while";
+    jeuInit.printMessage(message, true);
+    
+    dataMapRed = importData("dataRed.bin");
+    dataMapBlue = importData("dataBlue.bin");
+
+    message = "data retrieved from files";
+    jeuInit.printMessage(message, true);
+      //jeuInit.takeData();
+    //} catch (IOException e) {
+      //jeuInit.printMessage("yup we're f***", true);
+    //}
 
 
     int victoiresBleu = 0;
     int victoiresRouge = 0;
     int nombreDeParties = 1;
-    String message = "";
 
     // On demande à l'utilisateur la sélection de l'affichage
     while (StuckWin.affichageG != 1 && StuckWin.affichageG != 2) {
@@ -1460,6 +1560,7 @@ void takeData(char color) throws IOException {
           // On joue l'IA ou le joueur dépendament du gamemode
           if (gamemode == 3 || gamemode == 4) {
             reponse = jeu.jouerIA(curCouleur);
+            jeu.takeData(curCouleur);
           } else {
             reponse = jeu.jouer(curCouleur);
           }
@@ -1546,5 +1647,15 @@ void takeData(char color) throws IOException {
     message = "Victoires Bleu :" + victoiresBleu 
            + " Victoires Rouge :" + victoiresRouge;
     jeuInit.printMessage(message, true);
+
+    if (COLLECTING_DATA) {
+      //printData(dataMapBlue);
+      //printData(dataMapRed);
+      message = "writing data into file, this operation may take a while";
+      jeuInit.printMessage(message, true);
+      serializeToFile();
+      message = "writing data completed";
+      jeuInit.printMessage(message, true);
+    }
   }
 }

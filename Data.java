@@ -1,21 +1,28 @@
 import java.io.*;
-import java.util.ArrayList;
 
 // A simple data class that we want to serialize
 class Data implements Serializable {
-  private int value;
-  private char c;
+  private int WCountR;
+  private int WCountB;
 
-  public Data(int value, char c) {
-    this.value = value;
-    this.c = c;
+  public Data(int WCountR, int WCountB) {
+    this.WCountR = WCountR;
+    this.WCountB = WCountB;
   }
 
-  public int getValue() {
-    return value;
+  public int getWCountR() {
+    return WCountR;
   }
 
-  public char getC() {
-    return c;
+  public void setWCountR(int WCountR) {
+    this.WCountR = WCountR;
+  }
+
+  public int getWCountB() {
+    return WCountB;
+  }
+
+  public void setWCountB(int WCountB) {
+    this.WCountB = WCountB;
   }
 }
