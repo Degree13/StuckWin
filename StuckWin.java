@@ -1448,8 +1448,13 @@ int gamemodeSelect() {
 
   public static void printData(HashMap<String, Data> dataMap){
     // Print the values of the data objects in the HashMap
+    int i = 0;
     for (String key : dataMap.keySet()) {
       System.out.println(key + ": " + dataMap.get(key).getWCountB() + " " + dataMap.get(key).getWCountR());
+      if (i > 1000) {
+        return;
+      }
+      i++;
     }
   }
 
@@ -1460,7 +1465,7 @@ int gamemodeSelect() {
     String message = "";
 
     //try {
-    message = "retrieving data from files, this operation WHILE take a while";
+    message = "retrieving data from files, this operation WILL take a while";
     jeuInit.printMessage(message, true);
     
     dataMapRed = importData("dataRed.bin");
@@ -1560,7 +1565,6 @@ int gamemodeSelect() {
           // On joue l'IA ou le joueur dépendament du gamemode
           if (gamemode == 3 || gamemode == 4) {
             reponse = jeu.jouerIA(curCouleur);
-            jeu.takeData(curCouleur);
           } else {
             reponse = jeu.jouer(curCouleur);
           }
@@ -1614,13 +1618,15 @@ int gamemodeSelect() {
         // Pendant que la partie n'est pas fini, on recommence
       } while (partie == 'N');
 
+      jeu.takeData(partie);
+
       if (gamemode != 4){
         // On print le vainqueur et son nombre de coups utilisé
         System.out.printf("Victoire : " +partie+ " (" + (cpt / 2) + " coups)");
         System.out.println("");
         jeu.affiche();
       }
-
+      
       // On incrémente les compteurs de victoire
       if (partie == 'R') {
         victoiresRouge++;
@@ -1649,9 +1655,10 @@ int gamemodeSelect() {
     jeuInit.printMessage(message, true);
 
     if (COLLECTING_DATA) {
-      //printData(dataMapBlue);
-      //printData(dataMapRed);
-      message = "writing data into file, this operation may take a while";
+      printData(dataMapBlue);
+      System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+      printData(dataMapRed);
+      message = "writing data into file, this operation WILL take a while";
       jeuInit.printMessage(message, true);
       serializeToFile();
       message = "writing data completed";

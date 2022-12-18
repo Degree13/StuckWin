@@ -2,6 +2,7 @@ import java.io.*;
 
 // A simple data class that we want to serialize
 class Data implements Serializable {
+  private String key;
   private int WCountR;
   private int WCountB;
 
@@ -25,4 +26,9 @@ class Data implements Serializable {
   public void setWCountB(int WCountB) {
     this.WCountB = WCountB;
   }
+
+  public String getKey() {
+    // Return the key for this data object
+    return key;
+}
 }
