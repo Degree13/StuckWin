@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import java.util.Scanner;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.InputMismatchException;
 import java.util.PrimitiveIterator;
@@ -13,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.FileChannel;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -1029,12 +1032,12 @@ int gamemodeSelect() {
     // qu'une touche n'a pas été entrée ou que la souris n'a pas été cliqué
     while (counter < 40 && !StdDraw.hasNextKeyTyped() 
     && !StdDraw.isMousePressed()) {
-      StdDraw.picture(0.5, 0.5, "images/STUCKWIN_OPEN.gif", 1.5, 1);
+      StdDraw.picture(0.5, 0.5, "STUCKWIN_OPEN.gif", 1.5, 1);
       counter++;
     }
     // Pareil pour l'animation d'attente
     while (!StdDraw.hasNextKeyTyped() && !StdDraw.isMousePressed()) {
-      StdDraw.picture(0.5, 0.5, "images/STUCKWIN_WAIT.gif", 1.5, 1);
+      StdDraw.picture(0.5, 0.5, "STUCKWIN_WAIT.gif", 1.5, 1);
     }
 
     // On réinitialise nextKeyTyped pour après
@@ -1048,7 +1051,7 @@ int gamemodeSelect() {
     // Pareil pour l'animation de fermeture
     while (counter < 80 && !StdDraw.hasNextKeyTyped() 
     && !StdDraw.isMousePressed()) {
-      StdDraw.picture(0.5, 0.5, "images/STUCKWIN_CLOSE.gif", 1.5, 1);
+      StdDraw.picture(0.5, 0.5, "STUCKWIN_CLOSE.gif", 1.5, 1);
       counter++;
     }
     StdDraw.clear();
@@ -1151,7 +1154,7 @@ int gamemodeSelect() {
     // Initialisation
     StdDraw.setXscale(-10, 10);
     StdDraw.setYscale(-10, 10);
-    StdDraw.picture(0,0, "images/STUCKWIN_GAMEMODE.jpg", 20,20);
+    StdDraw.picture(0,0, "STUCKWIN_GAMEMODE.jpg", 20,20);
     StdDraw.show();
 
     // Pause pour ne pas clic 2x par erreur
@@ -1187,7 +1190,7 @@ int gamemodeSelect() {
    */
   int drawPartiesSelect() {
     // Initialisation
-    StdDraw.picture(0,0, "images/STUCKWIN_PARTIES.jpg", 20,20);
+    StdDraw.picture(0,0, "STUCKWIN_PARTIES.jpg", 20,20);
     StdDraw.show();
 
     // Pause pour ne pas clic 2x par erreur
@@ -1223,7 +1226,7 @@ int gamemodeSelect() {
    */
   int drawSpecialSelect() {
     // Initialisation
-    StdDraw.picture(0,0, "images/STUCKWIN_SPECIAL.jpg", 20,20);
+    StdDraw.picture(0,0, "STUCKWIN_SPECIAL.jpg", 20,20);
     StdDraw.show();
 
     // Pause pour ne pas clic 2x par erreur
@@ -1424,27 +1427,141 @@ int gamemodeSelect() {
   }
 
   public static void serializeToFile(){
-    // Serialize the HashMap Red and Blue to files
-    try {
-      FileOutputStream fos = new FileOutputStream("dataRed.bin");
-      ObjectOutputStream oos = new ObjectOutputStream(fos);
+      // Serialize the HashMap Red and Blue to files
+      try {
+        FileOutputStream fos = new FileOutputStream("dataRed.bin");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-      oos.writeObject(dataMapRed);
-      oos.close();
-    } catch (IOException e) {
-      System.out.println("takeData Red IOExeption");
+        oos.writeObject(dataMapRed);
+        oos.close();
+      } catch (IOException e) {
+        System.out.println("takeData Red IOExeption");
+      }
+
+      try {
+        FileOutputStream fos = new FileOutputStream("dataBlue.bin");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+        oos.writeObject(dataMapBlue);
+        oos.close();
+      } catch (IOException e) {
+        System.out.println("takeData Blue IOExeption");
+      }
     }
 
-    try {
-      FileOutputStream fos = new FileOutputStream("dataBlue.bin");
-      ObjectOutputStream oos = new ObjectOutputStream(fos);
+  public static void savingFiles(String namefile, HashMap<String, Data> hashMap){
+    int numberOfKeys = dataMapBlue.size();
+    int bufferSize = 500 * numberOfKeys + 1024;
 
-      oos.writeObject(dataMapBlue);
-      oos.close();
+      FileOutputStream fos = null;
+    try {
+      fos = new FileOutputStream(namefile, true);
+      FileChannel fc = fos.getChannel();
+
+      // Create a byte buffer and write the map to it
+      ByteBuffer bb = ByteBuffer.allocate(bufferSize);
+      for (Entry<String, Data> entry : hashMap.entrySet()) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(entry.getValue());
+        oos.close();
+        byte[] dataBytes = baos.toByteArray();
+        bb.putInt(entry.getKey().length());
+        bb.put(entry.getKey().getBytes());
+        bb.putInt(dataBytes.length);
+        bb.put(dataBytes);
+      }
+      bb.flip();
+      fc.write(bb);
+
+      // Close the file
+      fos.close();
     } catch (IOException e) {
-      System.out.println("takeData Blue IOExeption");
+      e.printStackTrace();
+    } finally {
+      if (fos != null) {
+        try {
+          fos.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
     }
   }
+
+public static Data searchValue(String namefile, String key) {
+  FileInputStream fis = null;
+  try {
+    fis = new FileInputStream(namefile);
+    FileChannel fc = fis.getChannel();
+    MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+
+    while (mbb.hasRemaining()) {
+      if (mbb.remaining() < 4) {  // Check if there are enough bytes remaining to read the key length
+        System.out.println("Error: Not enough data in buffer to read the key length");
+        return null;
+      }
+      int keyLength = mbb.getInt();  // Read the key length from the buffer
+      byte[] keyBytes = null;
+      if (keyLength <= mbb.remaining()) {  // Check if there are enough remaining bytes to read the key
+        keyBytes = new byte[keyLength];  // Create an array to hold the key bytes
+        mbb.get(keyBytes);  // Read the key bytes from the buffer into the array
+      } else {
+        System.out.println("Error: Not enough data in buffer to read the key");
+        return null;
+      }
+      String readKey = new String(keyBytes);  // Convert the key bytes to a string
+
+      if (readKey.equals(key)) {  // Check if the key matches the search key
+        
+        if (mbb.remaining() < 4) {  // Check if there are enough bytes remaining to read the value length
+          System.out.println("Error: Not enough data in buffer to read the value length");
+          return null;
+        }
+        int valueLength = mbb.getInt();  // Read the value length from the buffer
+        byte[] valueBytes = null;
+        if (valueLength <= mbb.remaining()) {  // Check if there are enough remaining bytes to read the value
+          valueBytes = new byte[valueLength];  // Create an array to hold the value bytes
+          mbb.get(valueBytes);  // Read the value bytes from the buffer into the array
+        } else {
+          System.out.println("Error: Not enough data in buffer to read the value");
+          return null;
+        }
+        ByteArrayInputStream bais = new ByteArrayInputStream(valueBytes);  // Create a ByteArrayInputStream to read the value bytes
+        ObjectInputStream ois = new ObjectInputStream(bais);  // Create an ObjectInputStream to deserialize the value object
+        Data value = (Data) ois.readObject();  // Deserialize the value object
+        ois.close();  // Close the ObjectInputStream
+        return value;  // Return the value object
+      }
+      // If the key does not match the search key, skip the value data
+      if (mbb.remaining() < 4) {  // Check if there are enough bytes remaining to read the value length
+        System.out.println("Error: Not enough data in buffer to read the value length");
+        return null;
+      }
+      int valueLength = mbb.getInt();  // Read the value length from the buffer
+      if (valueLength <= mbb.remaining()) { 
+                mbb.position(mbb.position() + valueLength);  // Skip the value bytes
+      } else {
+        System.out.println("Error: Not enough data in buffer to skip the value");
+        return null;
+      }
+    }
+    System.out.println("Error: Key not found in map, key : " + key);
+    return null;  // Return null if the search key was not found
+  } catch (IOException | ClassNotFoundException e) {
+    e.printStackTrace();
+    return null;
+  } finally {
+    if (fis != null) {
+      try {
+        fis.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+}
+
 
   public static void printData(HashMap<String, Data> dataMap){
     // Print the values of the data objects in the HashMap
@@ -1468,8 +1585,8 @@ int gamemodeSelect() {
     message = "retrieving data from files, this operation WILL take a while";
     jeuInit.printMessage(message, true);
     
-    dataMapRed = importData("dataRed.bin");
-    dataMapBlue = importData("dataBlue.bin");
+    //dataMapRed = importData("dataRed.bin");
+    //dataMapBlue = importData("dataBlue.bin");
 
     message = "data retrieved from files";
     jeuInit.printMessage(message, true);
@@ -1660,7 +1777,19 @@ int gamemodeSelect() {
       printData(dataMapRed);
       message = "writing data into file, this operation WILL take a while";
       jeuInit.printMessage(message, true);
-      serializeToFile();
+      //serializeToFile();
+
+      savingFiles("dataMapBlue.bin", dataMapBlue);
+      savingFiles("dataMapRed.bin", dataMapRed);
+      
+      String key = "RRRRRRRR.RRR...RR...BB..BBBB.B.BBBBBB";
+      Data value = searchValue("dataMapRed.bin", key);
+      if (value != null) {
+        System.out.println("Value for key " + key + ": " + value.toString());
+      } else {
+        System.out.println("Value for key " + key + " not found");
+      }
+
       message = "writing data completed";
       jeuInit.printMessage(message, true);
     }

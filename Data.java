@@ -30,5 +30,13 @@ class Data implements Serializable {
   public String getKey() {
     // Return the key for this data object
     return key;
-}
+  }
+
+  @Override
+  public String toString() {
+    return "Data{" +
+        "Red Win Count='" + WCountR + '\'' +
+        ", Blue Win Count='" + WCountB + '\'' +
+        '}';
+  }
 }
