@@ -34,7 +34,7 @@ public class StuckWin {
 
   static final Scanner input = new Scanner(System.in);
 
-  private static final double BOARD_SIZE = 7;
+  private static final int BOARD_SIZE = 7;
 
   enum Result {
     OK, BAD_COLOR, DEST_NOT_FREE, EMPTY_SRC, TOO_FAR, EXT_BOARD, EXIT
@@ -62,7 +62,6 @@ public class StuckWin {
 
   ArrayList<String> storedData = new ArrayList<>(10);
   ArrayList<Character> storedDataColor = new ArrayList<>(10);
-  ArrayList<String> virtualStates = new ArrayList<>();
 
   public static HashMap<String, Data> dataMapRed = new HashMap<>();
   public static HashMap<String, Data> dataMapBlue = new HashMap<>();
@@ -260,13 +259,13 @@ public class StuckWin {
         if ((idLettre > 0) && (state[idLettre - 1][idCol] == '.')) {
           possibilites[1] = "TOP";
         }
-        if ((idLettre >0 && idCol <7)&&(state[idLettre-1][idCol+1] == '.')){
+        if ((idLettre >0 && idCol <7) && (state[idLettre-1][idCol+1] == '.')){
           possibilites[2] = "RGT";
         }
         break;
 
       case 'R':
-        if ((idCol >1 && idLettre <6)&&(state[idLettre+1][idCol-1] == '.')){
+        if ((idCol > 1 && idLettre < 6) && (state[idLettre+1][idCol-1] == '.')){
           possibilites[0] = "LFT";
         }
         if ((idLettre < 6) && (state[idLettre + 1][idCol] == '.')) {
@@ -327,9 +326,9 @@ public class StuckWin {
         }
       }
     // Reset la couleur et sauter une ligne
-    toPrint = ""+ConsoleColors.RESET;
-    printMessage(toPrint, true);
     }
+  toPrint = ""+ConsoleColors.RESET;
+  printMessage(toPrint, true);
   }
 
     /**
@@ -604,6 +603,137 @@ public class StuckWin {
 
   /**
    * 
+   * Joue un tour
+   * 
+   * @param couleur couleur du pion à jouer
+   * 
+   * @return tableau contenant la position de départ et la destination du pion à
+   *         jouer.
+   * 
+   */
+  String[] jouerIA_StupidTurtle(char couleur) {
+    // Initialisation
+    String[] tabIa = new String[2];
+    int bestScore = Integer.MIN_VALUE;
+    String bestMove = "";
+    String actualState = createStringFromTab(state);
+
+    int sourceTokenNB = -1;
+    int sourceTokenCHAR = 65;
+    int destTokenNB = -1;
+    int destTokenCHAR = 65;
+
+    Data value = null;
+
+    ArrayList<String> lesPossiblesList = new ArrayList<String>();
+    lesPossiblesList = dataPossibilities(couleur);
+
+    for (String element : lesPossiblesList) {
+      int score = 10;
+      System.out.println(element);
+      if (couleur == 'R') {
+        value = searchValue("dataMapBlue.bin", element);
+      } else {
+        value = searchValue("dataMapRed.bin", element);
+      }
+      if (value != null) {
+        System.out.println("Win Red : " + value.getWCountR() + " Win Blue : " + value.getWCountB());
+        if (couleur == 'R') {
+          score = score(value.getWCountR(), value.getWCountB());
+        } else {
+          score = score(value.getWCountB(), value.getWCountR());
+        } 
+        System.out.println("Score : " + score);
+      } else {
+        System.out.println("No Data for this situation");
+      }
+      System.out.println();
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = element;
+      }
+    }
+
+
+      for (int i = 0; i < bestMove.length(); i++) {
+        if (bestMove.charAt(i) != actualState.charAt(i)) {
+          if (actualState.charAt(i) == couleur) {
+            if (i < 4){
+              sourceTokenNB = 7;
+              sourceTokenCHAR = sourceTokenCHAR+i; 
+            } else if (i < 9) {
+              sourceTokenNB = 6;
+              sourceTokenCHAR = sourceTokenCHAR+i-4;
+            } else if (i < 15) {
+              sourceTokenNB = 5;
+              sourceTokenCHAR = sourceTokenCHAR+i-9;
+            } else if (i < 22) {
+              sourceTokenNB = 4;
+              sourceTokenCHAR = sourceTokenCHAR+i-15;
+            } else if (i < 28) {
+              sourceTokenNB = 3;
+              sourceTokenCHAR = sourceTokenCHAR+i-21;
+            } else if (i < 33) {
+              sourceTokenNB = 2;
+              sourceTokenCHAR = sourceTokenCHAR+i-26;
+            } else if (i < 37) {
+              sourceTokenNB = 1;
+              sourceTokenCHAR = sourceTokenCHAR+i-30;
+            }
+          tabIa[0] = (char)sourceTokenCHAR + "" + sourceTokenNB;
+          } else if (actualState.charAt(i) == '.') {
+            if (i < 4){
+              destTokenNB = 7;
+              destTokenCHAR = destTokenCHAR+i; 
+            } else if (i < 9) {
+              destTokenNB = 6;
+              destTokenCHAR = destTokenCHAR+i-4;
+            } else if (i < 15) {
+              destTokenNB = 5;
+              destTokenCHAR = destTokenCHAR+i-9;
+            } else if (i < 22) {
+              destTokenNB = 4;
+              destTokenCHAR = destTokenCHAR+i-15;
+            } else if (i < 28) {
+              destTokenNB = 3;
+              destTokenCHAR = destTokenCHAR+i-21;
+            } else if (i < 33) {
+              destTokenNB = 2;
+              destTokenCHAR = destTokenCHAR+i-26;
+            } else if (i < 37) {
+              destTokenNB = 1;
+              destTokenCHAR = destTokenCHAR+i-30;
+            }
+          tabIa[1] = (char)destTokenCHAR + "" + destTokenNB;
+          }
+        }
+      }
+
+    if ("".equals(tabIa[0]) || "".equals(tabIa[1])) {
+      // pareil
+      String message = "Fonction JouerIA : tabIa vide";
+      throw new java.lang.UnsupportedOperationException(message);
+    }
+    if (COLLECTING_DATA) {
+      storeData(couleur);
+    }
+    // Quand tout est bon on revoi le résultat
+    System.out.println("tabIa[0] : " + tabIa[0] + " tabIa[1] : " + tabIa[1] + " BestMove : " + bestMove + " BestScore : " + bestScore);
+    return tabIa;
+  }
+
+  int score(int currentPlayerWins, int enemyWins) {
+    int score = 0;
+    // Give a higher score for a larger lead
+    score += (currentPlayerWins - enemyWins) * 100;
+    // Give a higher score for a larger number of total wins
+    score += (currentPlayerWins + enemyWins) * 3;
+    return score;
+  }
+
+  /**
+   * 
    * Gère le jeu en fonction du joueur/couleur
    * 
    * @param couleur
@@ -678,7 +808,7 @@ public class StuckWin {
             dst = input.next();
           }
         } else {
-          mvtIa = jouerIA(couleur);
+          mvtIa = jouerIA_StupidTurtle(couleur);
           src = mvtIa[0];
           dst = mvtIa[1];
         }
@@ -1254,75 +1384,114 @@ int gamemodeSelect() {
    */
   String createStringFromTab(char tab[][]) {
     String result = "";
-    for (int i = 0; i < SIZE-1; i++) {
-      for (int j = 0; j < state[i].length; j++) {
-        if (state[i][j] != '-') {
-          result += state[i][j];
+    for (int i = 0; i < BOARD_SIZE; i++) {
+      for (int j = 1; j < SIZE; j++) {
+        if (tab[i][j] != '-') {
+          result += tab[i][j];
         }
       }
     }
     return result;
   }
 
-  void dataPossibilities(char color){
-    char[][] virtualState = state;
+  ArrayList<String> dataPossibilities(char color){
+    ArrayList<String> virtualStates = new ArrayList<>();
+    System.out.println("This is the board rg : " + createStringFromTab(state));
+    char[][] virtualState = new char[BOARD_SIZE][SIZE];
     String resultat = "";
-    for (int i = 0; i < SIZE-1; i++) {
-      for (int j = 0; j < state[i].length; j++) {
-        String[] mouv = possibleDests(color, i, j);
 
-        switch (color){
-          case 'B':
-            if (!mouv[0].equals("XXX")) {
-              //deplace un pion sur le plateau virtuel
-              virtualState[i][j] = '.'; 
-              virtualState[i][j-1] = 'B';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            if (!mouv[1].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i+1][j-1] = 'B';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            if (!mouv[2].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i+1][j] = 'B';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            break;
+    for (int i = 0; i < BOARD_SIZE; i++) {
+      for (int j = 1; j < SIZE; j++) {
 
-          case 'R':
-            if (!mouv[0].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i-1][j] = 'R';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
+        if (state[i][j] == color){
+          String[] mouv = possibleDests(color, i, j);
+
+          System.out.println("idLettre=" + i + " idCol=" + j + " case=" + state[i][j]);
+          System.out.println("This is state rg: " + createStringFromTab(state));
+
+          for (String elem : mouv){
+            System.out.println(elem);
+          }
+          System.out.println();
+
+          switch (color){
+            case 'B':
+              if (!mouv[0].equals("XXX")) {
+                //deplace un pion sur le plateau virtuel
+                for (int lon = 0; lon < BOARD_SIZE; lon++) {
+                    for (int col = 0; col < SIZE; col++) {
+                      virtualState[lon][col] = state[lon][col];
+                    }
+                }
+                virtualState[i][j] = '.'; 
+                virtualState[i][j-1] = 'B';
+                resultat = createStringFromTab(virtualState);
+                virtualStates.add(resultat);
+              }
+              if (!mouv[1].equals("XXX")) {
+                for (int lon = 0; lon < BOARD_SIZE; lon++) {
+                    for (int col = 0; col < SIZE; col++) {
+                      virtualState[lon][col] = state[lon][col];
+                    }
+                }
+                virtualState[i][j] = '.'; 
+                virtualState[i-1][j] = 'B';
+                resultat = createStringFromTab(virtualState);
+                virtualStates.add(resultat);
+              }
+              if (!mouv[2].equals("XXX")) {
+                for (int lon = 0; lon < BOARD_SIZE; lon++) {
+                    for (int col = 0; col < SIZE; col++) {
+                      virtualState[lon][col] = state[lon][col];
+                    }
+                }
+                virtualState[i][j] = '.'; 
+                virtualState[i-1][j+1] = 'B';
+                resultat = createStringFromTab(virtualState);
+                virtualStates.add(resultat);
+              }
+              break;
+
+            case 'R':
+              if (!mouv[0].equals("XXX")) {
+                for (int lon = 0; lon < BOARD_SIZE; lon++) {
+                    for (int col = 0; col < SIZE; col++) {
+                      virtualState[lon][col] = state[lon][col];
+                    }
+                }
+                virtualState[i][j] = '.'; 
+                virtualState[i+1][j-1] = 'R';
+                resultat = createStringFromTab(virtualState);
+                virtualStates.add(resultat);
+              }
+              if (!mouv[1].equals("XXX")) {
+                for (int lon = 0; lon < BOARD_SIZE; lon++) {
+                    for (int col = 0; col < SIZE; col++) {
+                      virtualState[lon][col] = state[lon][col];
+                    }
+                }
+                virtualState[i][j] = '.'; 
+                virtualState[i+1][j] = 'R';
+                resultat = createStringFromTab(virtualState);
+                virtualStates.add(resultat);
+              }
+              if (!mouv[2].equals("XXX")) {
+                for (int lon = 0; lon < BOARD_SIZE; lon++) {
+                    for (int col = 0; col < SIZE; col++) {
+                      virtualState[lon][col] = state[lon][col];
+                    }
+                }
+                virtualState[i][j] = '.'; 
+                virtualState[i][j+1] = 'R';
+                resultat = createStringFromTab(virtualState);
+                virtualStates.add(resultat);
+              }
+              break;
             }
-            if (!mouv[1].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i-1][j+1] = 'R';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            if (!mouv[2].equals("XXX")) {
-              virtualState[i][j] = '.'; 
-              virtualState[i][j+1] = 'R';
-              resultat = createStringFromTab(virtualState);
-              virtualStates.add(resultat);
-              virtualState = state;
-            }
-            break;
         }
       }
     }
+  return virtualStates;
   }
 
   /**
@@ -1576,25 +1745,15 @@ public static Data searchValue(String namefile, String key) {
   }
 
   public static void main(String[] args) {
+    int numberAI = -1;
+    int counter = 0;
+    if (args.length > 0) {
+      numberAI = Integer.parseInt(args[0]);
+    }
     // Initialisation
     StuckWin jeuInit = new StuckWin();
     jeuInit.checkForFont();
     String message = "";
-
-    //try {
-    message = "retrieving data from files, this operation WILL take a while";
-    jeuInit.printMessage(message, true);
-    
-    //dataMapRed = importData("dataRed.bin");
-    //dataMapBlue = importData("dataBlue.bin");
-
-    message = "data retrieved from files";
-    jeuInit.printMessage(message, true);
-      //jeuInit.takeData();
-    //} catch (IOException e) {
-      //jeuInit.printMessage("yup we're f***", true);
-    //}
-
 
     int victoiresBleu = 0;
     int victoiresRouge = 0;
@@ -1732,6 +1891,7 @@ public static Data searchValue(String namefile, String key) {
         nextCouleur = tmp;
 
         cpt++;
+
         // Pendant que la partie n'est pas fini, on recommence
       } while (partie == 'N');
 
@@ -1749,6 +1909,23 @@ public static Data searchValue(String namefile, String key) {
         victoiresRouge++;
       } else {
         victoiresBleu++;
+      }
+
+      counter++;
+      if (COLLECTING_DATA && counter > 50000) {
+        message = "writing data into file, this operation can take a while";
+        jeuInit.printMessage(message, true);
+        //serializeToFile();
+    
+        savingFiles("dataMapBlue.bin", dataMapBlue);
+        savingFiles("dataMapRed.bin", dataMapRed);
+        dataMapBlue.clear();
+        dataMapRed.clear();
+    
+        message = "writing data completed, resuming matches";
+        jeuInit.printMessage(message, true);
+
+        counter = 0;
       }
 
       if (affichageG ==1) {
@@ -1772,23 +1949,12 @@ public static Data searchValue(String namefile, String key) {
     jeuInit.printMessage(message, true);
 
     if (COLLECTING_DATA) {
-      printData(dataMapBlue);
-      System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-      printData(dataMapRed);
-      message = "writing data into file, this operation WILL take a while";
+      message = "writing data into file, this operation can take a while";
       jeuInit.printMessage(message, true);
       //serializeToFile();
 
       savingFiles("dataMapBlue.bin", dataMapBlue);
       savingFiles("dataMapRed.bin", dataMapRed);
-      
-      String key = "RRRRRRRR.RRR...RR...BB..BBBB.B.BBBBBB";
-      Data value = searchValue("dataMapRed.bin", key);
-      if (value != null) {
-        System.out.println("Value for key " + key + ": " + value.toString());
-      } else {
-        System.out.println("Value for key " + key + " not found");
-      }
 
       message = "writing data completed";
       jeuInit.printMessage(message, true);
