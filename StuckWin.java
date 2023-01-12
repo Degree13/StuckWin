@@ -53,9 +53,10 @@ public class StuckWin {
   final char VIDE = '.';
 
   public static int gamemode;
-  public static boolean COLLECTING_DATA = true;
+  public static boolean COLLECTING_DATA = false;
   public static int niWkcutS = -1;
   public static int affichageG;
+  public static int numberAI = 0;
 
   public static final String ENTRY_ERROR = "Entrée invalide, réessayez";
   public static String globalDeplace = "";
@@ -326,6 +327,8 @@ public class StuckWin {
         }
       }
     // Reset la couleur et sauter une ligne
+    toPrint = ""+ConsoleColors.RESET;
+    printMessage(toPrint, true);
     }
   toPrint = ""+ConsoleColors.RESET;
   printMessage(toPrint, true);
@@ -616,7 +619,7 @@ public class StuckWin {
     String[] tabIa = new String[2];
     int bestScore = Integer.MIN_VALUE;
     String bestMove = "";
-    String actualState = createStringFromTab(state);
+    String actualState = createStringFromTab(state, 'A');
 
     int sourceTokenNB = -1;
     int sourceTokenCHAR = 65;
@@ -630,26 +633,48 @@ public class StuckWin {
 
     for (String element : lesPossiblesList) {
       int score = 10;
-      System.out.println(element);
+      
       if (couleur == 'R') {
-        value = searchValue("dataMapBlue.bin", element);
-      } else {
         value = searchValue("dataMapRed.bin", element);
-      }
-      if (value != null) {
-        System.out.println("Win Red : " + value.getWCountR() + " Win Blue : " + value.getWCountB());
-        if (couleur == 'R') {
-          score = score(value.getWCountR(), value.getWCountB());
-        } else {
-          score = score(value.getWCountB(), value.getWCountR());
-        } 
-        System.out.println("Score : " + score);
       } else {
-        System.out.println("No Data for this situation");
+        value = searchValue("dataMapBlue.bin", element);
       }
-      System.out.println();
 
-      if (score > bestScore) {
+      if (value != null) {
+        if (gamemode != 4) {
+          System.out.println("Win Red : " + value.getWCountR() + " Win Blue : " + value.getWCountB());
+        }
+
+        if (niWkcutS == 1) {
+          if (couleur == 'R') {
+            score = score(value.getWCountR(), value.getWCountB());
+          } else {
+            score = score(value.getWCountB(), value.getWCountR());
+          }
+        } else if (niWkcutS == 2) {
+          // Si le mode niWcuts est sélectionné, alors j'inverse simplement les
+          // valeurs envoyées a score() pour favoriser l'adversaire
+          if (couleur == 'R') {
+            score = score(value.getWCountR(), value.getWCountB());
+          } else {
+            score = score(value.getWCountB(), value.getWCountR());
+          }
+        }
+        
+        if (gamemode != 4) {
+          System.out.println("Possibilité : " + element + " Score : " + score);
+        } 
+      } else {
+        if (gamemode != 4) {
+          System.out.println("No Data for this situation");
+        }
+      }
+
+      if (gamemode != 4) {
+        System.out.println();
+      }
+
+      if (score >= bestScore) {
         bestScore = score;
         bestMove = element;
       }
@@ -719,7 +744,9 @@ public class StuckWin {
       storeData(couleur);
     }
     // Quand tout est bon on revoi le résultat
-    System.out.println("tabIa[0] : " + tabIa[0] + " tabIa[1] : " + tabIa[1] + " BestMove : " + bestMove + " BestScore : " + bestScore);
+    if (gamemode != 4) {
+      System.out.println("tabIa[0] : " + tabIa[0] + " tabIa[1] : " + tabIa[1] + " BestMove : " + bestMove + " BestScore : " + bestScore);
+    }
     return tabIa;
   }
 
@@ -728,7 +755,7 @@ public class StuckWin {
     // Give a higher score for a larger lead
     score += (currentPlayerWins - enemyWins) * 100;
     // Give a higher score for a larger number of total wins
-    score += (currentPlayerWins + enemyWins) * 3;
+    score += (currentPlayerWins + enemyWins) * 1.5;
     return score;
   }
 
@@ -808,7 +835,11 @@ public class StuckWin {
             dst = input.next();
           }
         } else {
-          mvtIa = jouerIA_StupidTurtle(couleur);
+          if (numberAI == 1) {
+            mvtIa = jouerIA_StupidTurtle(couleur);
+          } else {
+            mvtIa = jouerIA(couleur);
+          }
           src = mvtIa[0];
           dst = mvtIa[1];
         }
@@ -1382,21 +1413,34 @@ int gamemodeSelect() {
    * @return renvoie le String
    * 
    */
-  String createStringFromTab(char tab[][]) {
+  String createStringFromTab(char tab[][], char color) {
     String result = "";
     for (int i = 0; i < BOARD_SIZE; i++) {
       for (int j = 1; j < SIZE; j++) {
         if (tab[i][j] != '-') {
-          result += tab[i][j];
+          if (color == 'B' && tab[i][j] == 'R') {
+            result += '.';
+          } else if (color == 'R' && tab[i][j] == 'B') {
+            result += '.';
+          } else {
+            result += tab[i][j];
+          }
         }
       }
     }
-    return result;
+  return result;
   }
 
+  /**
+   * Permet de rechercher toutes les possibilités qu'un joueur peut jouer
+   * 
+   * @param color la couleur du joueur dont on veut connaitre les possibilités
+   * 
+   * @return Une liste de String représentant les différents états du tableau
+   * qui seraient possibles
+   */
   ArrayList<String> dataPossibilities(char color){
     ArrayList<String> virtualStates = new ArrayList<>();
-    System.out.println("This is the board rg : " + createStringFromTab(state));
     char[][] virtualState = new char[BOARD_SIZE][SIZE];
     String resultat = "";
 
@@ -1405,14 +1449,6 @@ int gamemodeSelect() {
 
         if (state[i][j] == color){
           String[] mouv = possibleDests(color, i, j);
-
-          System.out.println("idLettre=" + i + " idCol=" + j + " case=" + state[i][j]);
-          System.out.println("This is state rg: " + createStringFromTab(state));
-
-          for (String elem : mouv){
-            System.out.println(elem);
-          }
-          System.out.println();
 
           switch (color){
             case 'B':
@@ -1425,7 +1461,7 @@ int gamemodeSelect() {
                 }
                 virtualState[i][j] = '.'; 
                 virtualState[i][j-1] = 'B';
-                resultat = createStringFromTab(virtualState);
+                resultat = createStringFromTab(virtualState, color);
                 virtualStates.add(resultat);
               }
               if (!mouv[1].equals("XXX")) {
@@ -1436,7 +1472,7 @@ int gamemodeSelect() {
                 }
                 virtualState[i][j] = '.'; 
                 virtualState[i-1][j] = 'B';
-                resultat = createStringFromTab(virtualState);
+                resultat = createStringFromTab(virtualState, color);
                 virtualStates.add(resultat);
               }
               if (!mouv[2].equals("XXX")) {
@@ -1447,7 +1483,7 @@ int gamemodeSelect() {
                 }
                 virtualState[i][j] = '.'; 
                 virtualState[i-1][j+1] = 'B';
-                resultat = createStringFromTab(virtualState);
+                resultat = createStringFromTab(virtualState, color);
                 virtualStates.add(resultat);
               }
               break;
@@ -1461,7 +1497,7 @@ int gamemodeSelect() {
                 }
                 virtualState[i][j] = '.'; 
                 virtualState[i+1][j-1] = 'R';
-                resultat = createStringFromTab(virtualState);
+                resultat = createStringFromTab(virtualState, color);
                 virtualStates.add(resultat);
               }
               if (!mouv[1].equals("XXX")) {
@@ -1472,7 +1508,7 @@ int gamemodeSelect() {
                 }
                 virtualState[i][j] = '.'; 
                 virtualState[i+1][j] = 'R';
-                resultat = createStringFromTab(virtualState);
+                resultat = createStringFromTab(virtualState, color);
                 virtualStates.add(resultat);
               }
               if (!mouv[2].equals("XXX")) {
@@ -1483,7 +1519,7 @@ int gamemodeSelect() {
                 }
                 virtualState[i][j] = '.'; 
                 virtualState[i][j+1] = 'R';
-                resultat = createStringFromTab(virtualState);
+                resultat = createStringFromTab(virtualState, color);
                 virtualStates.add(resultat);
               }
               break;
@@ -1497,53 +1533,24 @@ int gamemodeSelect() {
   /**
    * 
    * Permet de stocker les données du jeu à un instant donnée
+   * Notament l'état du plateau (un String de 37 char), 
+   * et le tour du joueur actuel ('R' ou 'B')
    * 
+   * @param curPlayer le joueur qui doit jouer ('R' ou 'B')
    */
   void storeData(char curPlayer) {
-    String result = createStringFromTab(state);
+    String result = createStringFromTab(state, curPlayer);
     storedData.add(result);
     storedDataColor.add(curPlayer);
   }
 
-  public static HashMap<String, Data> importData(String nameFile) {
-    try {
-      // Read the serialized data from the file
-      FileInputStream fis = new FileInputStream(nameFile);
-      ObjectInputStream ois = new ObjectInputStream(fis);
-
-      if (nameFile.equals("dataRed.bin")) {
-        dataMapRed = (HashMap<String, Data>) ois.readObject();
-      } else if (nameFile.equals("dataBlue.bin")) {
-        dataMapBlue = (HashMap<String, Data>) ois.readObject();
-      } else {
-        System.out.println("Something is off");
-      }
-      ois.close();
-
-    } catch (IOException e) {
-      System.out.println("IOExeption");
-    } catch (ClassNotFoundException e){
-      System.out.println("ClassNotFound");
-    }
-
-    if (nameFile.equals("dataRed.bin")) {
-      return dataMapRed;
-    } else {
-      return dataMapBlue;
-    }
-  }
-
   /**
-   * @param winner
+   * Enregistre les données de la partie joué dans les HashMap 
+   * dataMapRed et dataMapBlue
+   * 
+   * @param winner le vainqueur de la partie
    */
   void takeData(char winner) {
-    // Create a HashMap and add some data to it
-    // dataMap.put("key1", new Data(42, 'R'));
-    // dataMap.put("key2", new Data(123, 'R'));
-    // dataMap.put("key3", new Data(567, 'R'));
-
-    //String stateString = createStringFromTab(state);
-
     int i = 0;
     // Pour chaque set de données récupéré par storeData
     for (String stateString : storedData) {
@@ -1594,35 +1601,18 @@ int gamemodeSelect() {
     storedData.clear();
     storedDataColor.clear();
   }
-
-  public static void serializeToFile(){
-      // Serialize the HashMap Red and Blue to files
-      try {
-        FileOutputStream fos = new FileOutputStream("dataRed.bin");
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-
-        oos.writeObject(dataMapRed);
-        oos.close();
-      } catch (IOException e) {
-        System.out.println("takeData Red IOExeption");
-      }
-
-      try {
-        FileOutputStream fos = new FileOutputStream("dataBlue.bin");
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-
-        oos.writeObject(dataMapBlue);
-        oos.close();
-      } catch (IOException e) {
-        System.out.println("takeData Blue IOExeption");
-      }
-    }
-
+  
+  /**
+   * Permet de sauvegarder les données des parties dans un fichier
+   * 
+   * @param namefile nom du fichier dans lequel on souhaite chercher une valeur
+   * @param hashmap valeurs que l'on souhaite ajouter au fichier
+   */
   public static void savingFiles(String namefile, HashMap<String, Data> hashMap){
-    int numberOfKeys = dataMapBlue.size();
-    int bufferSize = 500 * numberOfKeys + 1024;
-
-      FileOutputStream fos = null;
+    long numberOfKeys = hashMap.size();
+    int bufferSize = (int) Math.min(500 * numberOfKeys + 1024, Integer.MAX_VALUE*0.75);
+    
+    FileOutputStream fos = null;
     try {
       fos = new FileOutputStream(namefile, true);
       FileChannel fc = fos.getChannel();
@@ -1630,16 +1620,19 @@ int gamemodeSelect() {
       // Create a byte buffer and write the map to it
       ByteBuffer bb = ByteBuffer.allocate(bufferSize);
       for (Entry<String, Data> entry : hashMap.entrySet()) {
+        // Compress the key
+        String compressedKeyStr = compressData(entry.getKey());
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(entry.getValue());
         oos.close();
         byte[] dataBytes = baos.toByteArray();
-        bb.putInt(entry.getKey().length());
-        bb.put(entry.getKey().getBytes());
+        bb.putInt(compressedKeyStr.length());
+        bb.put(compressedKeyStr.getBytes());
         bb.putInt(dataBytes.length);
         bb.put(dataBytes);
-      }
+        }
       bb.flip();
       fc.write(bb);
 
@@ -1658,70 +1651,89 @@ int gamemodeSelect() {
     }
   }
 
-public static Data searchValue(String namefile, String key) {
-  FileInputStream fis = null;
-  try {
-    fis = new FileInputStream(namefile);
-    FileChannel fc = fis.getChannel();
-    MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+  /**
+   * Permet de chercher une valeur dans un fichier
+   * 
+   * @param namefile nom du fichier dans lequel on souhaite chercher une valeur
+   * @param key valeur que l'on souhaite chercher
+   * 
+   * @return un object Data
+   */
+  public static Data searchValue(String namefile, String oldkey) {
+    FileInputStream fis = null;
+    String key = compressData(oldkey);
+    try {
+      fis = new FileInputStream(namefile);
+      File file = new File(namefile);
+      long fileSize = file.length();
+      int bufferSize = (int) Math.min(fileSize, Integer.MAX_VALUE*0.75);
+      byte[] buffer = new byte[bufferSize];
+      int bytesRead;
+      Data value = null;
 
-    while (mbb.hasRemaining()) {
-      if (mbb.remaining() < 4) {  // Check if there are enough bytes remaining to read the key length
-        System.out.println("Error: Not enough data in buffer to read the key length");
-        return null;
-      }
-      int keyLength = mbb.getInt();  // Read the key length from the buffer
-      byte[] keyBytes = null;
-      if (keyLength <= mbb.remaining()) {  // Check if there are enough remaining bytes to read the key
-        keyBytes = new byte[keyLength];  // Create an array to hold the key bytes
-        mbb.get(keyBytes);  // Read the key bytes from the buffer into the array
-      } else {
-        System.out.println("Error: Not enough data in buffer to read the key");
-        return null;
-      }
-      String readKey = new String(keyBytes);  // Convert the key bytes to a string
-
-      if (readKey.equals(key)) {  // Check if the key matches the search key
-        
-        if (mbb.remaining() < 4) {  // Check if there are enough bytes remaining to read the value length
-          System.out.println("Error: Not enough data in buffer to read the value length");
-          return null;
+      while ((bytesRead = fis.read(buffer)) != -1) {
+        ByteBuffer bb = ByteBuffer.wrap(buffer, 0, bytesRead);
+        while (bb.hasRemaining()) {
+          if (bb.remaining() < 4) {
+            System.out.println("Error: Not enough data in buffer to read the key length");
+            value = searchValueRAF(namefile, key);
+            return value;
+          }
+          int keyLength = bb.getInt();
+          byte[] keyBytes = null;
+          if (keyLength <= bb.remaining()) {
+            keyBytes = new byte[keyLength];
+            bb.get(keyBytes);
+          } else {
+            System.out.println("Error: Not enough data in buffer to read the key");
+            value = searchValueRAF(namefile, key);
+            return value;
+          }
+          String readKey = new String(keyBytes);
+          if (readKey.equals(key)) {
+            if (bb.remaining() < 4) {
+              System.out.println("Error: Not enough data in buffer to read the value length");
+              value = searchValueRAF(namefile, key);
+              return value;
+            }
+            int valueLength = bb.getInt();
+            byte[] valueBytes = null;
+            if (valueLength <= bb.remaining()) {
+              valueBytes = new byte[valueLength];
+              bb.get(valueBytes);
+            } else {
+              System.out.println("Error: Not enough data in buffer to read the value");
+              value = searchValueRAF(namefile, key);
+              return value;
+            }
+            ByteArrayInputStream bais = new ByteArrayInputStream(valueBytes);
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            value = (Data) ois.readObject();
+            ois.close();
+            return value;
+            }
+          if (bb.remaining() < 4) {
+            System.out.println("Error: Not enough data in buffer to skip the value");
+            value = searchValueRAF(namefile, key);
+            return value;
+          }
+          int valueLength = bb.getInt();
+          if (valueLength <= bb.remaining()) {
+            bb.position(bb.position() + valueLength);
+          } else {
+            System.out.println("Error: Not enough data in buffer to skip the value");
+            value = searchValueRAF(namefile, key);
+            return value;
+          }
         }
-        int valueLength = mbb.getInt();  // Read the value length from the buffer
-        byte[] valueBytes = null;
-        if (valueLength <= mbb.remaining()) {  // Check if there are enough remaining bytes to read the value
-          valueBytes = new byte[valueLength];  // Create an array to hold the value bytes
-          mbb.get(valueBytes);  // Read the value bytes from the buffer into the array
-        } else {
-          System.out.println("Error: Not enough data in buffer to read the value");
-          return null;
-        }
-        ByteArrayInputStream bais = new ByteArrayInputStream(valueBytes);  // Create a ByteArrayInputStream to read the value bytes
-        ObjectInputStream ois = new ObjectInputStream(bais);  // Create an ObjectInputStream to deserialize the value object
-        Data value = (Data) ois.readObject();  // Deserialize the value object
-        ois.close();  // Close the ObjectInputStream
-        return value;  // Return the value object
       }
-      // If the key does not match the search key, skip the value data
-      if (mbb.remaining() < 4) {  // Check if there are enough bytes remaining to read the value length
-        System.out.println("Error: Not enough data in buffer to read the value length");
+      System.out.println("Error: Key not found in map, key : " + key);
+      return null;
+      } catch (IOException | ClassNotFoundException e) {
+        e.printStackTrace();
         return null;
-      }
-      int valueLength = mbb.getInt();  // Read the value length from the buffer
-      if (valueLength <= mbb.remaining()) { 
-                mbb.position(mbb.position() + valueLength);  // Skip the value bytes
-      } else {
-        System.out.println("Error: Not enough data in buffer to skip the value");
-        return null;
-      }
-    }
-    System.out.println("Error: Key not found in map, key : " + key);
-    return null;  // Return null if the search key was not found
-  } catch (IOException | ClassNotFoundException e) {
-    e.printStackTrace();
-    return null;
-  } finally {
-    if (fis != null) {
+      } finally {
+        if (fis != null) {
       try {
         fis.close();
       } catch (IOException e) {
@@ -1731,7 +1743,62 @@ public static Data searchValue(String namefile, String key) {
   }
 }
 
+  /**
+   * Fonction 'de secours' a searchValue qui prends plus de temps,
+   * mais fonctionne sur de plus grand fichiers
+   * 
+   * @param namefile nom du fichier dans lequel on souhaite chercher une valeur
+   * @param key valeur que l'on souhaite chercher
+   * 
+   * @return un object Data
+   */
+  public static Data searchValueRAF(String namefile, String key) {
+    RandomAccessFile raf = null;
+    try {
+        raf = new RandomAccessFile(namefile, "r");
+        // Go through the file looking for the key
+        while (raf.getFilePointer() < raf.length()) {
+            int keyLength = raf.readInt();
+            byte[] keyBytes = new byte[keyLength];
+            raf.read(keyBytes);
+            String readKey = new String(keyBytes);
+            if (readKey.equals(key)) {
+                // Found the key, read the value
+                int valueLength = raf.readInt();
+                byte[] valueBytes = new byte[valueLength];
+                raf.read(valueBytes);
+                ByteArrayInputStream bais = new ByteArrayInputStream(valueBytes);
+                ObjectInputStream ois = new ObjectInputStream(bais);
+                Data value = (Data) ois.readObject();
+                ois.close();
+                return value;
+            } else {
+                // Key does not match, skip the value
+                int valueLength = raf.readInt();
+                raf.seek(raf.getFilePointer() + valueLength);
+            }
+        }
+        System.out.println("Error: Key not found in map, key : " + key);
+        return null;
+    } catch (IOException | ClassNotFoundException e) {
+        e.printStackTrace();
+        return null;
+    } finally {
+        if (raf != null) {
+            try {
+                raf.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
 
+  /**
+   * Permet d'afficher un échantillon de données issue de HashMap
+   * 
+   * @param dataMap une HashMap
+   */
   public static void printData(HashMap<String, Data> dataMap){
     // Print the values of the data objects in the HashMap
     int i = 0;
@@ -1744,23 +1811,100 @@ public static Data searchValue(String namefile, String key) {
     }
   }
 
-  public static void main(String[] args) {
-    int numberAI = -1;
-    int counter = 0;
-    if (args.length > 0) {
-      numberAI = Integer.parseInt(args[0]);
+  public static String compressData(String someData) {
+    StringBuilder compressed = new StringBuilder();
+    int count = 1;
+    char last = someData.charAt(0);
+
+    for (int i = 1; i < someData.length(); i++) {
+        if (someData.charAt(i) == last) {
+            count++;
+        } else {
+            if (count > 1) {
+                compressed.append(count);
+            }
+            compressed.append(last);
+            last = someData.charAt(i);
+            count = 1;
+        }
     }
+    if (count > 1) {
+        compressed.append(count);
+    }
+    compressed.append(last);
+
+    return compressed.toString();
+  }
+
+  public static void main(String[] args) {
     // Initialisation
-    StuckWin jeuInit = new StuckWin();
-    jeuInit.checkForFont();
+    int counter = 0;
     String message = "";
+    StuckWin jeuInit = new StuckWin();
+    
+    try {
+      if (args.length > 0) {
+        Integer.parseInt(args[0]);
+        numberAI = Integer.parseInt(args[0]);
+      }
+    } catch (NumberFormatException e) {
+        // Handle the exception, for example by displaying an error message
+        message = "L'argument entré lors de l'exécution du fichier" 
+        + "n'est pas valide, valeur par défaut utilisée";
+        jeuInit.printMessage(message, true);
+        jeuInit.printMessage("", true);
+    }
+
+    // On vérifie que la police d'écriture utilisé est installée
+    jeuInit.checkForFont();
+
+    // On vérifie que les fichiers de sauvegarde n'ont pas été crées
+    File file1 = new File("dataMapBlue.bin");
+    File file2 = new File("dataMapRed.bin");
+    if ((file1.exists() && COLLECTING_DATA == true) 
+     || (file2.exists() && COLLECTING_DATA == true)) {
+      message = "Des fichiers de sauvegarde de données existent déjà, " +
+      "si vous continuez d'exécuter ce programme, il est possible qu'il " +
+      "perde en performances";
+      jeuInit.printMessage(message, true);
+
+      message = "Attention : Il est conseiller de supprimer les fichiers .bin " +
+      "ou vous pouvez désactiver la collecte de données";
+      jeuInit.printMessage(message, true);
+
+      jeuInit.printMessage("", true);
+    }
+
+    // On demande à l'utilisateur si il souhaite sauvegarder les données
+    boolean choisi = false;
+    while (!choisi) {
+      jeuInit.printMessage("", true);
+      message = "Voulez-vous sauvegarder les données ? (1) oui (2) non";
+      jeuInit.printMessage(message, true);
+
+      try {
+        int nb = input.nextInt();
+        if (nb == 1) {
+          COLLECTING_DATA = true;
+          choisi = true;
+        } else if (nb == 2) {
+          choisi = true;
+        }
+
+      } catch(InputMismatchException e){
+        jeuInit.printMessage(ENTRY_ERROR, true);
+        input.nextLine();
+      }
+    }
 
     int victoiresBleu = 0;
     int victoiresRouge = 0;
     int nombreDeParties = 1;
 
+    
     // On demande à l'utilisateur la sélection de l'affichage
     while (StuckWin.affichageG != 1 && StuckWin.affichageG != 2) {
+      jeuInit.printMessage("", true);
       message = "Voulez-vous afficher les graphiques ? (1) oui (2) non";
       jeuInit.printMessage(message, true);
 
@@ -1775,6 +1919,7 @@ public static Data searchValue(String namefile, String key) {
 
     // Si l'affichage est activé, on utilise StdDraw
     if (StuckWin.affichageG == 1) {
+      jeuInit.printMessage("", true);
       message = "Attention, les inputs dans le terminal sont maintenant "
       + "désactivés, veuillez utiliser l'affichage StdDraw pour intéragir "
       + "avec le jeu";
@@ -1840,7 +1985,11 @@ public static Data searchValue(String namefile, String key) {
           
           // On joue l'IA ou le joueur dépendament du gamemode
           if (gamemode == 3 || gamemode == 4) {
-            reponse = jeu.jouerIA(curCouleur);
+            if (numberAI == 1 && cpt%2==0) {
+              reponse = jeu.jouerIA_StupidTurtle(curCouleur);
+            } else {
+              reponse = jeu.jouerIA(curCouleur);
+            }
           } else {
             reponse = jeu.jouer(curCouleur);
           }
@@ -1895,7 +2044,9 @@ public static Data searchValue(String namefile, String key) {
         // Pendant que la partie n'est pas fini, on recommence
       } while (partie == 'N');
 
+      jeu.affichageGraphique();
       jeu.takeData(partie);
+      StdDraw.show();
 
       if (gamemode != 4){
         // On print le vainqueur et son nombre de coups utilisé
@@ -1912,10 +2063,9 @@ public static Data searchValue(String namefile, String key) {
       }
 
       counter++;
-      if (COLLECTING_DATA && counter > 50000) {
+      if (COLLECTING_DATA && counter >= 1000000) {
         message = "writing data into file, this operation can take a while";
         jeuInit.printMessage(message, true);
-        //serializeToFile();
     
         savingFiles("dataMapBlue.bin", dataMapBlue);
         savingFiles("dataMapRed.bin", dataMapRed);
@@ -1930,7 +2080,7 @@ public static Data searchValue(String namefile, String key) {
 
       if (affichageG ==1) {
         // On dessine le gagnant
-        jeu.drawWinningScreen(partie, cpt/2, victoiresBleu, victoiresRouge);
+        //jeu.drawWinningScreen(partie, cpt/2, victoiresBleu, victoiresRouge);
         StdDraw.show();
       }
 
@@ -1951,7 +2101,6 @@ public static Data searchValue(String namefile, String key) {
     if (COLLECTING_DATA) {
       message = "writing data into file, this operation can take a while";
       jeuInit.printMessage(message, true);
-      //serializeToFile();
 
       savingFiles("dataMapBlue.bin", dataMapBlue);
       savingFiles("dataMapRed.bin", dataMapRed);
