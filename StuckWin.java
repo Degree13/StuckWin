@@ -56,7 +56,7 @@ public class StuckWin {
   public static boolean COLLECTING_DATA = false;
   public static int niWkcutS = -1;
   public static int affichageG;
-  public static int numberAI = 0;
+  public static int numberAI = 1;
 
   public static final String ENTRY_ERROR = "Entrée invalide, réessayez";
   public static String globalDeplace = "";
@@ -641,10 +641,6 @@ public class StuckWin {
       }
 
       if (value != null) {
-        if (gamemode != 4) {
-          System.out.println("Win Red : " + value.getWCountR() + " Win Blue : " + value.getWCountB());
-        }
-
         if (niWkcutS == 1) {
           if (couleur == 'R') {
             score = score(value.getWCountR(), value.getWCountB());
@@ -660,18 +656,6 @@ public class StuckWin {
             score = score(value.getWCountB(), value.getWCountR());
           }
         }
-        
-        if (gamemode != 4) {
-          System.out.println("Possibilité : " + element + " Score : " + score);
-        } 
-      } else {
-        if (gamemode != 4) {
-          System.out.println("No Data for this situation");
-        }
-      }
-
-      if (gamemode != 4) {
-        System.out.println();
       }
 
       if (score >= bestScore) {
@@ -744,9 +728,6 @@ public class StuckWin {
       storeData(couleur);
     }
     // Quand tout est bon on revoi le résultat
-    if (gamemode != 4) {
-      System.out.println("tabIa[0] : " + tabIa[0] + " tabIa[1] : " + tabIa[1] + " BestMove : " + bestMove + " BestScore : " + bestScore);
-    }
     return tabIa;
   }
 
@@ -835,7 +816,7 @@ public class StuckWin {
             dst = input.next();
           }
         } else {
-          if (numberAI == 1) {
+          if (numberAI == 2) {
             mvtIa = jouerIA_StupidTurtle(couleur);
           } else {
             mvtIa = jouerIA(couleur);
@@ -1419,9 +1400,10 @@ int gamemodeSelect() {
       for (int j = 1; j < SIZE; j++) {
         if (tab[i][j] != '-') {
           if (color == 'B' && tab[i][j] == 'R') {
-            result += '.';
+            // Modifier result pour alterer l'IA
+            result += '.'; //result += 'R';
           } else if (color == 'R' && tab[i][j] == 'B') {
-            result += '.';
+            result += '.'; //result += 'B';
           } else {
             result += tab[i][j];
           }
@@ -1727,7 +1709,7 @@ int gamemodeSelect() {
           }
         }
       }
-      System.out.println("Error: Key not found in map, key : " + key);
+      // Key not found in map
       return null;
       } catch (IOException | ClassNotFoundException e) {
         e.printStackTrace();
@@ -1985,9 +1967,11 @@ int gamemodeSelect() {
           
           // On joue l'IA ou le joueur dépendament du gamemode
           if (gamemode == 3 || gamemode == 4) {
-            if (numberAI == 1 && cpt%2==0) {
+            if (numberAI == 2 && cpt%2==0) {
+              System.out.println("AI 1");
               reponse = jeu.jouerIA_StupidTurtle(curCouleur);
             } else {
+              System.out.println("AI 2");
               reponse = jeu.jouerIA(curCouleur);
             }
           } else {
@@ -2044,9 +2028,11 @@ int gamemodeSelect() {
         // Pendant que la partie n'est pas fini, on recommence
       } while (partie == 'N');
 
-      jeu.affichageGraphique();
+      if (affichageG == 1) {
+        jeu.affichageGraphique();
+        StdDraw.show();
+      }
       jeu.takeData(partie);
-      StdDraw.show();
 
       if (gamemode != 4){
         // On print le vainqueur et son nombre de coups utilisé
@@ -2080,7 +2066,7 @@ int gamemodeSelect() {
 
       if (affichageG ==1) {
         // On dessine le gagnant
-        //jeu.drawWinningScreen(partie, cpt/2, victoiresBleu, victoiresRouge);
+        jeu.drawWinningScreen(partie, cpt/2, victoiresBleu, victoiresRouge);
         StdDraw.show();
       }
 
