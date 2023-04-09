@@ -1968,10 +1968,8 @@ int gamemodeSelect() {
           // On joue l'IA ou le joueur dépendament du gamemode
           if (gamemode == 3 || gamemode == 4) {
             if (numberAI == 2 && cpt%2==0) {
-              System.out.println("AI 1");
               reponse = jeu.jouerIA_StupidTurtle(curCouleur);
             } else {
-              System.out.println("AI 2");
               reponse = jeu.jouerIA(curCouleur);
             }
           } else {
