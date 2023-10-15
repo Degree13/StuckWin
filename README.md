@@ -5,8 +5,7 @@ Par :
   
 Classe S1-C1 - IUT Nord Franche-Comté - Projet de 1ère année - 2021  
 
-![image](https://github.com/Degree13/StuckWin/assets/53911681/a34e91d3-ad14-46d0-b182-e88427a56e71)
-
+![image](https://github.com/Degree13/StuckWin/assets/53911681/c4765412-30fe-4aa9-b714-95e7602a798e)
 
 Stuckwin est un jeu à deux joueurs dont les règles sont les suivantes :
 
@@ -21,8 +20,7 @@ Stuckwin est un jeu à deux joueurs dont les règles sont les suivantes :
 
 Ce jeu peut être joué au terminal, ou graphiquement à la souris, à vous de choisir !
 
-![image](https://github.com/Degree13/StuckWin/assets/53911681/98cb38d6-6442-4b10-92c0-2f0f54039bd4)
-
+![image](https://github.com/Degree13/StuckWin/assets/53911681/04b37111-dccd-4a4f-ac99-dd0b177dd986)
 
 Il est aussi possible de jouer contre soi-même, contre une IA, ou une IA contre une IA.
 
@@ -39,8 +37,6 @@ Note : Lors de l'enregistrement de données, il est conseillé de procéder selo
 
 
 Demo :
-
-[recording-2023-10-15-18-09-04.webm](https://github.com/Degree13/StuckWin/assets/53911681/89df3543-e130-4d4a-925b-e314e1eb7432)
 
 [recording-2023-10-15-18-09-04.webm](https://github.com/Degree13/StuckWin/assets/53911681/db7af09c-2511-473e-8de9-efea8419ea83)
 
