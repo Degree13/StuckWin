@@ -1,8 +1,12 @@
 # StuckWin
-Par Noah NICOLAS
-Et Mame Diarra Thiam
-S1-C1
-IUT Nord Franche-Comté
+Par :
+- Noah NICOLAS  
+- Mame Diarra Thiam
+  
+Classe S1-C1 - IUT Nord Franche-Comté - Projet de 1ère année - 2021  
+
+![image](https://github.com/Degree13/StuckWin/assets/53911681/a34e91d3-ad14-46d0-b182-e88427a56e71)
+
 
 Stuckwin est un jeu à deux joueurs dont les règles sont les suivantes :
 
@@ -17,6 +21,9 @@ Stuckwin est un jeu à deux joueurs dont les règles sont les suivantes :
 
 Ce jeu peut être joué au terminal, ou graphiquement à la souris, à vous de choisir !
 
+![image](https://github.com/Degree13/StuckWin/assets/53911681/98cb38d6-6442-4b10-92c0-2f0f54039bd4)
+
+
 Il est aussi possible de jouer contre soi-même, contre une IA, ou une IA contre une IA.
 
 En rajoutant 1 en argument lors de l'exécution du fichier, il est possible de sélectionner l'IA 2, dans ce cas, elle jouera lors des parties :
@@ -27,5 +34,12 @@ En rajoutant 1 en argument lors de l'exécution du fichier, il est possible de s
 Note : Lors de l'enregistrement de données, il est conseillé de procéder selon les paramètres suivants :
 - Pas d'affichage graphique
 - AI VS AI configuration minimum
-- mode StuckWin (de toute façon l'IA 2 peut déjà jouer au mode niWcutS par l'enregistrement des données en mode StuckWin)
+- mode StuckWin
 - nombre de parties : entre 50.000 et 500.000
+
+
+Demo :
+
+[recording-2023-10-15-18-09-04.webm](https://github.com/Degree13/StuckWin/assets/53911681/89df3543-e130-4d4a-925b-e314e1eb7432)
+
+
