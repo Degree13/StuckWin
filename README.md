@@ -42,4 +42,5 @@ Demo :
 
 [recording-2023-10-15-18-09-04.webm](https://github.com/Degree13/StuckWin/assets/53911681/89df3543-e130-4d4a-925b-e314e1eb7432)
 
+[recording-2023-10-15-18-09-04.webm](https://github.com/Degree13/StuckWin/assets/53911681/db7af09c-2511-473e-8de9-efea8419ea83)
 
